@@ -1,4 +1,6 @@
 # badusb-software-firewall
+## Screenshoot
+![gui](https://user-images.githubusercontent.com/31700285/30253515-2779f2e2-9687-11e7-8954-6a358583f9b5.PNG)
 ## BadUSB-Software-Firewall
 A Software-Firewall for preventing attacks of manipulated USB-devices. Actually the application is in development and the GUI is only a prototype. The application is written in C# and is tested under Windows 10 but should also work under Windows 7 and 8.
 ## Usage
