@@ -1,0 +1,16 @@
+﻿<Window x:Class="BadUSB_Firewall.FirstStart"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+         WindowStartupLocation="CenterScreen"
+        WindowStyle="ThreeDBorderWindow"
+        Background="#FFDDE2E4"
+        Title="First start of the BadUSB-Software Firewall" Height="240" Width="480">
+    <Grid >
+        <Button x:Name="YesButton" Content="CONTINUE" HorizontalAlignment="Left" Margin="285,170,0,0"   VerticalAlignment="Top" Width="76" Click="yesButton_Click"/>
+        <Button x:Name="NoButton" Content="EXIT" HorizontalAlignment="Left" Margin="371,170,8,0" VerticalAlignment="Top" Width="76" Click="noButton_Click"/>
+        <TextBlock x:Name="TextWindow" HorizontalAlignment="Left" Height="144" Background="White" TextWrapping="Wrap" Margin="15"  VerticalAlignment="Top" Width="442"/>
+    </Grid>
+</Window>

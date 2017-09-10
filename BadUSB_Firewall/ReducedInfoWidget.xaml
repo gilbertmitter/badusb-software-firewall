@@ -1,0 +1,43 @@
+﻿<Window x:Class="BadUSB_Firewall.ReducedInfoWidget"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="BadUSB-Firewall: " Height="91" Width="150"
+        ResizeMode="NoResize" Topmost="True" WindowStyle="None"
+        HorizontalAlignment="Right" VerticalAlignment="Bottom"
+        Background="#FFDDE2E4"
+        >
+    <Grid Margin="0,1,0,1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"></RowDefinition>
+            <RowDefinition Height="14"></RowDefinition>
+            <RowDefinition Height="14"></RowDefinition>
+            <RowDefinition Height="14"></RowDefinition>
+            <RowDefinition Height="14"></RowDefinition>
+            <RowDefinition Height="14"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="64"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Label x:Name="ToastTitle" Grid.Row="0" Grid.ColumnSpan="2"  Foreground="White" FontSize="10" Padding="1,2,1,2"   Background="Black" ></Label>
+        <Rectangle Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" Height="18" Width="18" Margin="0,1,3,1" Stroke="White" RadiusX="1" RadiusY="1"></Rectangle>
+        <Button x:Name="CloseButton"  Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Width="16" Height="16" FontSize="12" Padding="1,-1,1,1" Margin="1,1,4,1"  Foreground="White" FontWeight="Bold" Click="CloseButton_Click">X</Button>
+
+        <Image   Name="ToastImage" Grid.Row="1" Grid.RowSpan="5" Grid.Column="0" Stretch="Fill"  Width="60" Height="60"  Margin="2,5,2,5" />
+        <Label Content="Devices "  Grid.Row="1" Grid.Column="1" FontSize="9" Padding="1,1,1,1"  VerticalAlignment="Center"></Label>
+        <TextBox x:Name="DevicesNowBox" Grid.Row="1" Grid.Column="1" Margin="66,1,4,0" Width="16" Height="12" FontSize="9" TextAlignment="Center"  IsReadOnly="True"   VerticalContentAlignment="Center" ></TextBox>
+        <Label Content="Interfaces "  Grid.Row="2" Grid.Column="1" FontSize="9" Padding="1,1,1,1"  VerticalAlignment="Center"></Label>
+        <TextBox x:Name="InterfacesNowBox" Grid.Row="2" Grid.Column="1" Margin="66,1,4,0" Width="16" Height="12" FontSize="9" TextAlignment="Center"  IsReadOnly="True" VerticalContentAlignment="Center"></TextBox>
+        <Label Content="Keyboards "  Grid.Row="3" Grid.Column="1" FontSize="9" Padding="1,1,1,1"   VerticalAlignment="Center"></Label>
+        <TextBox x:Name="KeyboardsNowBox" Grid.Row="3" Grid.Column="1" Margin="66,1,4,0" Width="16" Height="12" FontSize="9" TextAlignment="Center"  IsReadOnly="True" VerticalContentAlignment="Center"   ></TextBox>
+        <Label Content="Pointing dev. "  Grid.Row="4" Grid.Column="1" FontSize="9" Padding="1,1,1,1"  VerticalAlignment="Center"></Label>
+        <TextBox x:Name="PointingNowBox" Grid.Row="4" Grid.Column="1" Margin="66,1,4,0" Width="16" Height="12"  FontSize="9" TextAlignment="Center"  IsReadOnly="True"  VerticalContentAlignment="Center" ></TextBox>
+        <Label Content="Network adapt. "  Grid.Row="5" Grid.Column="1" FontSize="9" Padding="1,1,1,1"  VerticalAlignment="Center"></Label>
+        <TextBox x:Name="NetworkNowBox" Grid.Row="5" Grid.Column="1" Margin="66,1,4,0" Width="16" Height="12" FontSize="9" TextAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True"  ></TextBox>
+
+
+    </Grid>
+</Window>
