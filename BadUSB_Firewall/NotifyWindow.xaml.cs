@@ -1,11 +1,11 @@
-﻿/**
-**************************************************************************************************
+/**
+*********************************************************************************************************
 * @file	   NotifyWindow.xaml.cs
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Benachrichtigungsfenster für die erweiterten Whitelist-Überwachungs u. Schutzfunktionen
-**************************************************************************************************
+* @brief   Notification window for the advanced Whitelist monitoring and monitoring. protection functions
+*********************************************************************************************************
 */
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace BadUSB_Firewall
     public partial class NotifyWindow : INotifyPropertyChanged
     {
         private string _counter;
-        private readonly int timeToClose = 60;  // Das jeweilige Fenster schließt sich nach 60 Sekunden automatisch
+        private readonly int timeToClose = 60;  // The window closes automatically after 60 seconds
         private System.Timers.Timer _countTimer;
         Thread _newWindowThread;
         private readonly string _dateAdded;
@@ -95,8 +95,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Startet den automatischen Timer. Sollte innerhalb 60 Sekunden bei geöffneten Fenster
-        /// keine Benutzeraktion erfolgen, so wird das Fenster automatisch geschlossen.
+        /// Starts the automatic timer. Should be no user action within 60
+        /// the open window is automatically closed.
         /// </summary>
         /// <param name="">Param Description</param>
         private void StartWindowTimer()
@@ -114,7 +114,6 @@ namespace BadUSB_Firewall
         private void ThreadStartingPoint()
         {
             _countTimer = new System.Timers.Timer {Interval = 1000};
-            //1 second
             _countTimer.Elapsed += timer_Elapsed;
             _countTimer.Start();
 
@@ -144,7 +143,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zeigt den Text abhängig der gewählten Whitelist-Überwachungsfunktionen an.
+        /// Displays the text depending on the selected Whitelist monitoring functions.
         /// </summary>
         /// <param name="">Param Description</param>
         private void DisplayText()
@@ -175,22 +174,22 @@ namespace BadUSB_Firewall
                 TextWindow.Inlines.Add(new Run(msg + Environment.NewLine) { FontWeight = FontWeights.Bold, FontSize = 12, Foreground = Brushes.Black });
                 TextWindow.Inlines.Add("VendorID: " + _devices[foundPos].mVendorID + " ProductID: " + _devices[foundPos].mProductID);
 
-                //Portwechsel verbieten. An richtigen Geräteanschluss könnte das Gerät durch drücken 
-                //des "Enable" Knopf wieder aktiviert werden
+                // Prohibit port exchange. The device could be activated at the correct device connection
+                // by pressing the "Enable" button
                 if (_prohibitPortChange)
                 {
                     EnableButton.IsEnabled = true;
                     DisableButton.IsEnabled = false;
 
                 }
-                //Gerät hat Anschluss gewechselt. Möglichkeit zum Blockieren geben.
+                //Device has changed port. Give the possibility to block it.
                 else if (_portChange)
                 {
                     EnableButton.IsEnabled = false;
                     DisableButton.IsEnabled = true;
 
                 }
-                //Gerät wurde blockiert
+                //Device has been blocked
                 else if (_blockedPort && !_portChange)
                 {
                     DisableButton.IsEnabled = false;
@@ -213,7 +212,7 @@ namespace BadUSB_Firewall
                 }
                 else
                 {
-                    //Ein anderes Gerät mit den selben Eigenschaften ist aktuell bereits verbunden.
+                    //Another device with the same properties is currently connected.
                     if (_connected)
                     {
 
@@ -301,8 +300,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion zur Behandlung des drückens des "Enable"-Knopfs.
-        /// Gerät wird wieder aktiviert.
+        /// Function for handling the "Enable" button.
+        /// Device is reactivated.
         /// </summary>
         /// <param name="">Param Description</param>
         public void EnableButton_Click(object sender, RoutedEventArgs e)
@@ -349,7 +348,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Geräteblockierung wurde ausgewählt.
+        /// Device Blocking has been selected.
         /// </summary>
         /// <param name="">Param Description</param>
         public void DisableButton_Click(object sender, RoutedEventArgs e)
