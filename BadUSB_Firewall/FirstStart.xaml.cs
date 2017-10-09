@@ -1,10 +1,10 @@
-﻿/**
+/**
 ******************************************************************************
 * @file	   FirstStart.xaml.cs
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Fenster wird beim allerersten Programmstart angezeigt
+* @brief   Window is displayed at the very first program start
 ******************************************************************************
 */
 using System;
@@ -57,7 +57,7 @@ namespace BadUSB_Firewall
         private bool _noPressed = false;
 
         /// <summary>
-        /// Anzahl der vorhandenene Tastaturen
+        /// Number of keyboards present
         /// </summary>
         /// <param name="">Param Description</param>
         private string NumOfKeyboards
@@ -73,7 +73,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Anzahl der vorhandenen Zeigegeräte
+        /// Number of pointing devices present
         /// </summary>
         /// <param name="">Param Description</param>
         private string NumOfPointingDevices
@@ -102,7 +102,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Öffnet ein Fenster und zeigt den Starttext an.
+        /// Opens a window and displays the start text.
         /// </summary>
         /// <param name="">Param Description</param>
         private void DisplayText()
