@@ -4,7 +4,7 @@
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Funktionen, welche die Änderung des Gerätezustandes durchführen
+* @brief   Functions that make the change of the device state
 ******************************************************************************
 */
 
@@ -15,18 +15,17 @@ using System.Text;
 
 namespace BadUSB_Firewall
 {
-    //Parameter für die changeDeviceState Funktion
+    //Parameter fÃ¼r die changeDeviceState Funktion
     public enum ChangeDeviceStateParams
     {
-        Enable,             //Geräteaktivierung
-        Disable,            //Deaktivierung
-        DisableComposite,   //Deaktivierung Verbundgeräte
-        DetectReboot,       //Erkennen ob ein Reboot benötigt wird
-        Reset,              //Gerätereset
-        Remove,             //Löschen des Gerätes
-        Unremove,           //Löschen rückgängig machen
-        Available,          //Überprüfen ob Gerät aktuell verbunden ist
-        Scanhardwarechanges //Reenumeration des Gerätebaumes
+        Enable,             //Activate
+        Disable,            //Deactivate
+        DisableComposite,   //Deactivate compiund-devices
+        DetectReboot,       //Detect if a reboot is needed
+        Reset,              //Device-Reset
+        Remove,             //Delete a device
+        Available,          //Detect if the device is actually connected
+        Scanhardwarechanges //Reenumeration of the devicetree
     }
     #region Native_Functions
     public class ChangeDeviceState
@@ -58,10 +57,8 @@ namespace BadUSB_Firewall
         private const uint DigcfPresent = 0x00000002;
         //Device interfaces only for the specified device interface class
         private const uint DigcfDeviceinterface = 0x00000010;
-        //private const int DigcfProfile = 0x00000008;
         private const int BufferSize = 256;
         private const int MaxPath = 260;
-        // private const int MaxDeviceIdLen = 200;
         private const int DiNeedrestart = 0x00000080;
         private const int DiNeedreboot = 0x00000100;
 
@@ -85,15 +82,19 @@ namespace BadUSB_Firewall
 
        public enum DicsFunction
         {
-            DicsEnable = 0x00000001,    //Loads the drivers for the device and starts the device, if possible. If the function cannot start the device, it sets the DI_NEEDREBOOT flag for the device which indicates to the initiator of the property change request that they must prompt the user to restart the computer.
-            DicsDisable = 0x00000002,   //Disables the device. If the device can be disabled but this function cannot disable the device dynamically, this function marks the device to be disabled the next time that the computer restarts.
-            DicsPropchange = 0x00000003 //Removes and reconfigures the device so that the new properties can take effect. This flag typically indicates that a user has changed a property on a device manager property page for the device. The PnP manager directs the drivers for the device to remove their device objects and then the PnP manager reconfigures and restarts the device.
+            DicsEnable = 0x00000001,    //Loads the drivers for the device and starts the device, if possible. 
+                                        //If the function cannot start the device, it sets the DI_NEEDREBOOT flag for the device which indicates to the 
+                                        //initiator of the property change request that they must prompt the user to restart the computer.
+            DicsDisable = 0x00000002,   //Disables the device. If the device can be disabled but this function cannot disable the device 
+                                        //dynamically, this function marks the device to be disabled the next time that the computer restarts.
+            DicsPropchange = 0x00000003 //Removes and reconfigures the device so that the new properties can take effect. This flag typically 
+                                        //indicates that a user has changed a property on a device manager property page for the device. The PnP manager 
+                                        //directs the drivers for the device to remove their device objects and then the PnP manager reconfigures and restarts the device.
         }
 
         public enum DifFunction
         {
             DifRemove = 0x00000005,     //device installation function - remove
-            DifUnremove = 0x00000016,   //for installing
             DifPropertychange = 0x00000012
         }
 
@@ -107,8 +108,8 @@ namespace BadUSB_Firewall
         }
         #endregion
 
-        /*Importierung der externen SetupAPI und CfgMgr32 DLL.
-         *  Beschreibungen sind hauptsächlich von der Microsoft Hardware Dev center Webseite entnommen.
+        /*Import of the external SetupAPI and CfgMgr32 DLL.
+         *  Descriptions for native functions are mainly taken from the Microsoft Hardware Dev center Website.
          https://developer.microsoft.com/en-us/windows/hardware
          */
 
@@ -119,8 +120,7 @@ namespace BadUSB_Firewall
                                                                 out PnpVetoType pVetoType, 
                                                                 StringBuilder pszVetoName, 
                                                                 uint ulNameLength, 
-                                                                uint ulFlags
-                                                               );
+                                                                uint ulFlags);                                                               
 
         //Retrieves a specified device property from the registry
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -131,26 +131,13 @@ namespace BadUSB_Firewall
                                                                     StringBuilder buffer,
                                                                     ref uint pulLength,
                                                                     uint ulFlags);
-        ////Retrieves a specified device property from the registry
-        //[DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        //public static extern int CM_Get_DevNode_Registry_Property(
-        //                                                            [In] uint dnDevInst,
-        //                                                            [In] uint ulProperty,
-        //                                                            [Out] IntPtr pulRegDataType,
-        //                                                            [Out] StringBuilder buffer,
-        //                                                            [In, Out] ref uint pulLength,
-        //                                                            [In] uint ulFlags);
+
         //Obtains a device instance handle to the parent node of a specified device node (devnode) in the local machine's device tree.
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         static extern uint CM_Get_Parent(
                                         out UInt32 pdnDevInst,
                                         UInt32 dnDevInst,
                                         UInt32 ulFlags);
-        //[DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        //static extern uint CM_Get_Parent(
-        //                              [Out] out UInt32 pdnDevInst,
-        //                              [In] UInt32 dnDevInst,
-        //                              [In] UInt32 ulFlags);
 
         //Enumerates the devices identified by a specified device node and all of its children.
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -312,11 +299,10 @@ namespace BadUSB_Firewall
         #endregion
 
         /// <summary>
-        /// Gibt eine durch devDescription spezifizierte Geräteeigenschaft aus
-        /// der Registrierung für eine übergebene Geräteinstanz zurück.
+        /// Returns a device property specified by devDescription from the registry for a given device instance.
         /// </summary>
         /// <param name="">Param Description</param>
-        private string GetDescription(IntPtr devHandle, SP_DEVINFO_DATA deviceInfoData, SpdrpCodes devDescription)
+        private string GetDescription(IntPtr devHandle, SP_DEVINFO_DATA deviceInfoData, SpdrpCodes spdrpCode)
         {
             StringBuilder deviceDescription = new StringBuilder(MaxPath);
             string description = "";
@@ -326,7 +312,7 @@ namespace BadUSB_Firewall
             bool found = SetupDiGetDeviceRegistryProperty(
                                                             devHandle,
                                                             deviceInfoData,
-                                                            (uint)devDescription,
+                                                            (uint)spdrpCode,
                                                             out propertyRegDataType,
                                                             deviceDescription,
                                                             BufferSize,
@@ -340,8 +326,47 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüft ob ein Gerät mit der selben HardwareID aktuell aktiv am System angeschlossen ist.
-        /// Wenn ein Gerät an einem anderen USB-PortAnschluss gefunden wird, so wird diese Anschlussposition retouniert
+        /// Returns the Stringbuilder length for a searched device-property.
+        /// </summary>
+        /// <param name="">Param Description</param>
+        private uint GetRequiredSize(IntPtr devHandle, SP_DEVINFO_DATA devInfoData, SpdrpCodes spdrpCode)
+        {
+
+            uint requiredSize;
+            uint propertyRegDataType;
+            SetupDiGetDeviceRegistryProperty(
+                                                 devHandle,
+                                                 devInfoData,
+                                                 (uint)spdrpCode,
+                                                 out propertyRegDataType,
+                                                 null,
+                                                 0,
+                                                 out requiredSize);
+            return requiredSize;
+        }
+
+        /// <summary>
+        /// Stores a searched device-property in the passed stringbuilder.
+        /// </summary>
+        /// <param name="deviceProperty">Stores the device-information</param>
+        private uint GetDeviceProperty(IntPtr devHandle, SP_DEVINFO_DATA devInfoData, SpdrpCodes spdrpCode, uint propertyBufferSize, StringBuilder deviceProperty)
+        {
+            uint requiredSize;
+            uint propertyRegDataType;
+            SetupDiGetDeviceRegistryProperty(
+                                                                                        devHandle,
+                                                                                        devInfoData,
+                                                                                        (uint)spdrpCode,
+                                                                                        out propertyRegDataType,
+                                                                                        deviceProperty,
+                                                                                        propertyBufferSize,
+                                                                                        out requiredSize);
+            return requiredSize;
+        }
+
+        /// <summary>
+        /// Checks whether a device with the same hardwareID is currently actively connected to the system.
+        /// If a device is found on a different USB port port, this port position is returned.
         /// </summary>
         /// <param name="">Param Description</param>
         public string get_DevicePort(string hardwareID, string deviceLocation, string deviceClassGUID)
@@ -404,7 +429,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion zur Deaktivierung eines USB-Gerätes
+        /// Function for deactivation of a USB-device.
         /// </summary>
         /// <param name="">Param Description</param>
         public int disable_USBDevice(string hardwareID, string classGuid, string firstLocation, bool usePort)
@@ -442,14 +467,14 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Funktion, welche ein Gerät im vorhandenen Gerätebaum entsprechend der HardwareID und Anschlussposition findet
-        /// und dann die durch "mode" angegebene Funktion (z.b. enable, disable) aufruft.
+        /// Function which finds a device in the existing device tree corresponding to the hardware ID and connection position
+        /// and then call the function specified by "mode" (eg enable, disable).
         /// </summary>
         /// <param name="">Param Description</param>
-        /// <param name="hardwareID">HardwareID des Gerätes</param>
-        /// <param name="deviceClassGUID">Geräteklassen-GUID des Gerätes</param>
-        /// <param name="deviceLocation">Anschlussposition</param>
-        /// <param name="usePort">Definiert ob Anschlussposition bei der Suche des Gerätes miteinbezogen werden soll</param>
+        /// <param name="hardwareID">HardwareID of the device</param>
+        /// <param name="deviceClassGUID">Device-class-GUID of the device</param>
+        /// <param name="deviceLocation">Connection-position</param>
+        /// <param name="usePort">Defines if the connection-position of the device should be used</param>
         /// <param name="mode">ChangeDeviceStateParams</param>
         public int ChangeDevState(string hardwareID, string deviceClassGUID, string deviceLocation, bool usePort, ChangeDeviceStateParams mode)
         {
@@ -508,22 +533,22 @@ namespace BadUSB_Firewall
                 while (true)
                 {
                     foundDevice = false;
-                    //Gibt eine SP_DEVINFO_DATA Struktur zurück, welche ein Geräteinformations-Element in einem Geräteinformations-Satz spezifiziert.
+                    //Returns an SP_DEVINFO_DATA structure that specifies a device information item in a device information set.
                     var found = SetupDiEnumDeviceInfo(devHandle, index, devInfoData);
                     if (!found)
                     {
-                        break;//Keine weiteren Geräte
+                        break;//No more devices
                     }
-                    //Überprüfe die HardwareID
+                    //Check the HardwareID
                     var devHwId = GetDescription(devHandle, devInfoData, SpdrpCodes.SpdrpHardwareid);
 
                     if (devHwId.ToLower().Equals(deviceHwId.ToLower()))
                     {
-                        //Verwende Anschlussposition
+                        //Use the port connection
                         if (usePort)
                         {
                             var devLocation = GetDescription(devHandle, devInfoData, SpdrpCodes.SpdrpLocationInformation);
-                            //Erhaltene Position stimmt mit gesuchter Position überein
+                            //Returned Port matches the searched port
                             if (devLocation == deviceLocation)
                             {
                                 foundDevice = true;
@@ -538,13 +563,13 @@ namespace BadUSB_Firewall
                     }
                     index++;
                 }
-                //gesuchtes Gerät wurde gefunden
+                //Searched device was found
                 if (foundDevice)
                 {
                     var res = false;
                     switch (mode)
                     {
-                        //Verbundgerät deaktivieren (Hier wird sofort die CM_Query_And_Remove_SubTree Funktion verwendet).
+                        //Deactivate a compound-device (Use the CM_Query_And_Remove_SubTree function).
                         case ChangeDeviceStateParams.DisableComposite:
                             result = Remove_DeviceNew(devInfoData);
                             if (result != (int)ErrorCode.Success)
@@ -553,13 +578,13 @@ namespace BadUSB_Firewall
                                 if (res) { result = (int)ErrorCode.Success; } else { result = Marshal.GetLastWin32Error(); }
                             }
                             break;
-                        //Gerät deaktivieren
+                        //Deactivate the device
                         case ChangeDeviceStateParams.Disable:
                             result = Change_DeviceState(devHandle, devInfoData, DicsFunction.DicsDisable);
                             // ERROR_NOT_DISABLEABLE)// 0xe0000231 =  decimal -536870351(on 32bit system),
                             if (result == (int)ErrorCode.ErrorNotDisableable)
                             {
-                                //Gerät nicht zum deaktivieren auf normalen Wege geeignet
+                                //Device is not suitable for disabling in normal way
                                 result = Remove_DeviceNew(devInfoData);
                                 if (result != (int)ErrorCode.Success)
                                 {
@@ -568,7 +593,7 @@ namespace BadUSB_Firewall
                                 }
                             }
                             break;
-                        //Gerät aktivieren
+                        //Activate device
                         case ChangeDeviceStateParams.Enable:
                             result = Change_DeviceState(devHandle, devInfoData, DicsFunction.DicsEnable);
                             if (result == (int)ErrorCode.Success)
@@ -584,7 +609,7 @@ namespace BadUSB_Firewall
                                 //45 - Currently, this hardware device is not connected to the computer.
                                 //47 - Windows cannot use this hardware device because it has been prepared for safe removal, but it has not been removed from the computer.
                                 
-                                //Geräteknoten rücksetzen
+                                //Reset device-node
                                 if (deviceProblemCode > 0)
                                 {
                                     result = Change_DeviceState(devHandle, devInfoData, DicsFunction.DicsPropchange);
@@ -595,26 +620,19 @@ namespace BadUSB_Firewall
                         
                         case ChangeDeviceStateParams.Reset: result = Change_DeviceState(devHandle, devInfoData, DicsFunction.DicsPropchange); break;
 
-                        case ChangeDeviceStateParams.Unremove:
-                            result = Remove_Device(devHandle, devInfoData, false);
-                            break;
-                        //Gerät löschen
+                        //Delete device
                         case ChangeDeviceStateParams.Remove:
                             result = Remove_DeviceNew(devInfoData);
                             if (result != (int)ErrorCode.Success)
-                            {//try to uninstall device
+                            {
+                                //try to uninstall device
                                 res = SetupDiCallClassInstaller(DifFunction.DifRemove, devHandle, devInfoData);
                                 if (res) { result = (int)ErrorCode.Success; } else { result = Marshal.GetLastWin32Error(); }
                             }
                             break;
                         case ChangeDeviceStateParams.Available: result = (int)ErrorCode.Success; break;
-                        //case ChangeDeviceStateParams.DetectReboot:
-                        //    int needsReboot = DetectReboot(devHandle, devInfoData);
-                        //    if (needsReboot != 0)
-                        //    {
-                        //    }
-                        //    break;
-                        //Überprüfen ob Änderungen an der Hardware anliegen
+
+                        //Check if there are any changes to the hardware
                         case ChangeDeviceStateParams.Scanhardwarechanges: result = ForceReenumeration(); break;
 
                         default: break;
@@ -643,7 +661,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Sucht die Schnittstellen für ein Hauptgerät und retourniert diese als Liste
+        /// Searches the interfaces for a specified-device and return them as a list
         /// </summary>
         /// <param name="">Param Description</param>
         public int FindChild(List<USBDeviceInfo> childDevices, string instanceID, string hardwareID, string dateConnected)
@@ -674,10 +692,11 @@ namespace BadUSB_Firewall
 
 
                     //get Get device interface info handle for Guid of the searched device
-                    devHandle = SetupDiGetClassDevs(ref devGuid,//classguid
-                                                           IntPtr.Zero,//no enumerator
-                                                           IntPtr.Zero,
-                                                           DigcfAllclasses | DigcfPresent);//Only Devices present
+                    devHandle = SetupDiGetClassDevs(
+                                                    ref devGuid,
+                                                    IntPtr.Zero,                    //no enumerator
+                                                    IntPtr.Zero,
+                                                    DigcfAllclasses | DigcfPresent);//Only Devices present
 
 
                     //check for a return value of INVALID_HANDLE_VALUE
@@ -761,38 +780,17 @@ namespace BadUSB_Firewall
             return 0;
         }
 
-        ///// <summary>
-        ///// Überprüfen ob für das Gerät ein Systemreboot benötigt wird.
-        ///// </summary>
-        ///// <param name="">Param Description</param>
-        ////detect if a reboot is needed
-        //private int DetectReboot(IntPtr devs, SP_DEVINFO_DATA devInfo)
-        //{
-        //    int needsNoReboot = 0;
-
-        //    SP_DEVINSTALL_PARAMS dipParams =
-        //        new SP_DEVINSTALL_PARAMS { cbSize = Marshal.SizeOf(typeof(SP_DEVINSTALL_PARAMS)) };
-
-        //    bool result = SetupDiGetDeviceInstallParams(devs, devInfo, ref dipParams);
-
-        //    if ((SetupDiGetDeviceInstallParams(devs, devInfo, ref dipParams) && ((dipParams.Flags & DiNeedrestart) == DiNeedrestart || (dipParams.Flags & DiNeedreboot) == DiNeedreboot)))
-        //    {
-        //        return (int)ErrorCode.ErrorSuccessRebootRequired;
-        //    }
-        //    return needsNoReboot;
-        //}
-
         /// <summary>
-        /// Reenumeration eines Gerätebaums aus einer Anwendung
-        /// und Scannen nach Hardwareänderungen.
-        /// "Nach geänderter Hardware suchen" im Geräte Manager.
+        /// Reenumeration of a device tree from an application
+        /// and scan for Hardware-changes.
+        /// corresponds to "Search fÃ³r changed hardware" in the device-manager of windows.
         /// https://support.microsoft.com/en-gb/kb/259697
         /// </summary>
         /// <param name="">Param Description</param>
         public int ForceReenumeration()
         {
             uint devInst = 0;
-            //Geräteknoten 
+            //Device-node
             var result = CM_Locate_DevNode(ref devInst, null, CmLocateDevnodeNormal);
 
             if (result != (int)ErrorCode.Success)
@@ -810,7 +808,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Prüft, ob eine Geräteinstanz und ihre Kinder entfernt werden können, und wenn ja, entfernt sie sie.
+        /// Checks if a device device and their children can be removed, and if so, removes them.
         /// </summary>
         /// <param name="">Param Description</param>
         //https://msdn.microsoft.com/en-gb/library/ff539806.aspx
@@ -828,9 +826,9 @@ namespace BadUSB_Firewall
                     uint deviceProblemCode;
                     uint status;
                     uint result;
-                    PnpVetoType vetoType;// PNP_VETO_TYPE Um den Grund für die Ablehnung der Funktion zu identifizieren
+                    PnpVetoType vetoType;// PNP_VETO_TYPE To identify the reason for the rejection of the function
 
-                    //Status Informationen für das Gerät holen
+                    //Get the status-information of a device
                     lastError = CM_Get_DevNode_Status(out status, out deviceProblemCode, devInfoData.devInst, 0);
 
                     if (lastError == (int)ErrorCode.Success)
@@ -854,72 +852,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Löscht ein Gerät aus der Geräteliste
-        /// </summary>
-        /// <param name="">Param Description</param>
-        //UNREMOVE not working as expected-REMOVE = OK
-        private int Remove_Device(IntPtr devInfo, SP_DEVINFO_DATA devInfoData, bool remove)
-        {
-            int lastError = 0;
-            try
-            {
-                //unremove https://msdn.microsoft.com/de-de/library/windows/hardware/ff553349(v=vs.85).aspx
-
-                SP_REMOVEDEVICE_PARAMS pcpParams = new SP_REMOVEDEVICE_PARAMS
-                {
-                    ClassInstallHeader =
-                    {
-                        cbSize = (UInt32) Marshal.SizeOf(typeof(SP_CLASSINSTALL_HEADER)),
-                        InstallFunction = remove ? DifFunction.DifRemove : DifFunction.DifUnremove
-                    },
-                    Scope = remove ? Scopes.DiRemovedeviceGlobal : Scopes.DiUnremovedeviceConfigspecific,
-                    HwProfile = 0
-                };
-
-
-                var result = SetupDiSetClassInstallParams(devInfo,
-                    devInfoData,
-                    pcpParams,
-                    (uint)Marshal.SizeOf(typeof(SP_REMOVEDEVICE_PARAMS)));
-
-                if (result == false)
-                {
-                    lastError = Marshal.GetLastWin32Error();
-                    return lastError;
-                }
-                if (remove)
-                {
-                    result = SetupDiCallClassInstaller(DifFunction.DifRemove,
-                                                       devInfo,
-                                                       devInfoData);
-                }
-                else
-                {
-                    result = SetupDiCallClassInstaller(DifFunction.DifUnremove,
-                                                        devInfo,
-                                                        devInfoData);
-                }
-
-
-
-                if (result == false)
-                {
-                    lastError = Marshal.GetLastWin32Error();
-                    return lastError;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                // Console.WriteLine("Error: " + lastError.ToString() + ex.Message);
-                return lastError;
-            }
-            return lastError;
-        }
-
-
-        /// <summary>
-        /// Wechselt Gerätezustand auf aktiviert oder deaktiviert
+        /// Switches device state to enabled or disabled
         /// </summary>
         /// <param name="">Param Description</param>
         private int Change_DeviceState(IntPtr devInfo, SP_DEVINFO_DATA devInfoData, DicsFunction stateParam)
@@ -963,19 +896,17 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                // Console.WriteLine("Error: " + lastError.ToString() + ex.Message);
                 return lastError;
             }
             return lastError;
         }
 
         /// <summary>
-        /// Description
+        /// Return a device-onformation for a searched device-property
         /// </summary>
         /// <param name="">Param Description</param>
         private static string GetDeviceData(uint devInst, uint devProperty)
         {
-
             uint len = 0;
          
             CM_Get_DevNode_Registry_Property(devInst, devProperty, IntPtr.Zero, null, ref len, 0);
@@ -986,7 +917,7 @@ namespace BadUSB_Firewall
             {
                 return data.ToString();
             }
-            //Der Gerätetreiber für diese Hardware kann nicht initialisiert werden
+            //The device driver for this hardware can not be initialized
             else if (result == 37) { return ""; }
             else
             {
@@ -996,7 +927,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Informationen eines gefundenen USB-Gerätes abfragen
+        /// Request information from a found USB device
         /// </summary>
         /// <param name="">Param Description</param>
         private static USBDeviceInfo get_ChildData(uint devInst, string hwID, string dateConnected, string devID)
@@ -1087,8 +1018,10 @@ namespace BadUSB_Firewall
             return childDevice;
         }
 
+
+
         /// <summary>
-        /// Geräteinformationen des Hauptgerätes abfragen
+        /// Check the device information of the main unit
         /// </summary>
         /// <param name="">Param Description</param>
         public bool getDeviceDescription(DEV_BROADCAST_DEVICEINTERFACE dev, USBDeviceInfo device)
@@ -1144,141 +1077,42 @@ namespace BadUSB_Firewall
                                 if (devId == deviceId.ToString())
                                 {
                                     found = true;
-                                    uint propertyRegDataType;
-                                    uint requiredSize;
 
-                                    SetupDiGetDeviceRegistryProperty(
-                                                                               devHandle,
-                                                                               devInfoData,
-                                                                               (uint)SpdrpCodes.SpdrpService,
-                                                                               out propertyRegDataType,
-                                                                               null,
-                                                                               0,
-                                                                               out requiredSize);
-
+                                    uint requiredSize = 0;
+                                    
+                                    requiredSize = GetRequiredSize(devHandle,devInfoData,SpdrpCodes.SpdrpService);
                                     StringBuilder deviceService = new StringBuilder((int)requiredSize);
-                                    SetupDiGetDeviceRegistryProperty(
-                                                                            devHandle,
-                                                                            devInfoData,
-                                                                            (uint)SpdrpCodes.SpdrpService,
-                                                                            out propertyRegDataType,
-                                                                            deviceService,
-                                                                            requiredSize,
-                                                                            out requiredSize);
+                                    GetDeviceProperty(devHandle, devInfoData, SpdrpCodes.SpdrpService, requiredSize, deviceService);
 
                                     if (deviceService.ToString().Length > 0)
                                     {
-                                        SetupDiGetDeviceRegistryProperty(
-                                                                              devHandle,
-                                                                              devInfoData,
-                                                                              (uint)SpdrpCodes.SpdrpClassguid,
-                                                                              out propertyRegDataType,
-                                                                              null,
-                                                                              0,
-                                                                              out requiredSize);
+                                        requiredSize = GetRequiredSize(devHandle, devInfoData, SpdrpCodes.SpdrpClassguid);
                                         StringBuilder deviceClassGuid = new StringBuilder((int)requiredSize);
-                                        SetupDiGetDeviceRegistryProperty(
-                                                                                devHandle,
-                                                                                devInfoData,
-                                                                                (uint)SpdrpCodes.SpdrpClassguid,
-                                                                                out propertyRegDataType,
-                                                                                deviceClassGuid,
-                                                                                requiredSize,
-                                                                                out requiredSize);
+                                        GetDeviceProperty(devHandle, devInfoData, SpdrpCodes.SpdrpClassguid, requiredSize, deviceClassGuid);
 
                                         Guid classGuid = new Guid(deviceClassGuid.ToString().ToUpper());
 
                                         if (DeviceClass.AcceptedGuid.Contains(classGuid))
                                         {
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                                    devHandle,
-                                                                                    devInfoData,
-                                                                                    (uint)SpdrpCodes.SpdrpDevicedesc,
-                                                                                    out propertyRegDataType,
-                                                                                    null,
-                                                                                    0,
-                                                                                    out requiredSize);
+                                            requiredSize = GetRequiredSize(devHandle, devInfoData, SpdrpCodes.SpdrpDevicedesc);
                                             StringBuilder deviceDescription = new StringBuilder((int)requiredSize);
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                                    devHandle,
-                                                                                    devInfoData,
-                                                                                    (uint)SpdrpCodes.SpdrpDevicedesc,
-                                                                                    out propertyRegDataType,
-                                                                                    deviceDescription,
-                                                                                    requiredSize,
-                                                                                    out requiredSize);
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                                     devHandle,
-                                                                                     devInfoData,
-                                                                                     (uint)SpdrpCodes.SpdrpHardwareid,
-                                                                                     out propertyRegDataType,
-                                                                                     null,
-                                                                                     0,
-                                                                                     out requiredSize);
+                                            GetDeviceProperty(devHandle, devInfoData, SpdrpCodes.SpdrpDevicedesc, requiredSize, deviceDescription);
 
+                                            requiredSize = GetRequiredSize(devHandle, devInfoData, SpdrpCodes.SpdrpHardwareid);
                                             StringBuilder deviceHwId = new StringBuilder((int)requiredSize);
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                                   devHandle,
-                                                                                   devInfoData,
-                                                                                   (uint)SpdrpCodes.SpdrpHardwareid,
-                                                                                   out propertyRegDataType,
-                                                                                   deviceHwId,
-                                                                                   requiredSize,
-                                                                                   out requiredSize);
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                                    devHandle,
-                                                                                    devInfoData,
-                                                                                    (uint)SpdrpCodes.SpdrpLocationInformation,
-                                                                                    out propertyRegDataType,
-                                                                                    null,
-                                                                                    0,
-                                                                                    out requiredSize);
+                                            GetDeviceProperty(devHandle, devInfoData, SpdrpCodes.SpdrpHardwareid, requiredSize, deviceHwId);
+
+                                            requiredSize = GetRequiredSize(devHandle, devInfoData, SpdrpCodes.SpdrpLocationInformation);
                                             StringBuilder devicePath = new StringBuilder((int)requiredSize);
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                                     devHandle,
-                                                                                     devInfoData,
-                                                                                     (uint)SpdrpCodes.SpdrpLocationInformation,
-                                                                                     out propertyRegDataType,
-                                                                                     devicePath,
-                                                                                     requiredSize,
-                                                                                     out requiredSize);
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                               devHandle,
-                                                                               devInfoData,
-                                                                               (uint)SpdrpCodes.SpdrpCompatibleids,
-                                                                               out propertyRegDataType,
-                                                                               null,
-                                                                               0,
-                                                                               out requiredSize);
+                                            GetDeviceProperty(devHandle, devInfoData, SpdrpCodes.SpdrpLocationInformation, requiredSize, devicePath);
 
+                                            requiredSize = GetRequiredSize(devHandle, devInfoData, SpdrpCodes.SpdrpCompatibleids);
                                             StringBuilder deviceCompatibleId = new StringBuilder((int)requiredSize);
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                                   devHandle,
-                                                                                   devInfoData,
-                                                                                   (uint)SpdrpCodes.SpdrpCompatibleids,
-                                                                                   out propertyRegDataType,
-                                                                                   deviceCompatibleId,
-                                                                                   requiredSize,
-                                                                                   out requiredSize);
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                                    devHandle,
-                                                                                    devInfoData,
-                                                                                    (uint)SpdrpCodes.SpdrpMfg,
-                                                                                    out propertyRegDataType,
-                                                                                    null,
-                                                                                    0,
-                                                                                    out requiredSize);
+                                            GetDeviceProperty(devHandle, devInfoData, SpdrpCodes.SpdrpCompatibleids, requiredSize, deviceCompatibleId);
 
+                                            requiredSize = GetRequiredSize(devHandle, devInfoData, SpdrpCodes.SpdrpMfg);
                                             StringBuilder deviceMfg = new StringBuilder((int)requiredSize);
-
-                                            SetupDiGetDeviceRegistryProperty(
-                                                                                     devHandle,
-                                                                                     devInfoData,
-                                                                                     (uint)SpdrpCodes.SpdrpMfg,
-                                                                                     out propertyRegDataType,
-                                                                                     deviceMfg,
-                                                                                     requiredSize,
-                                                                                    out requiredSize);
+                                            GetDeviceProperty(devHandle, devInfoData, SpdrpCodes.SpdrpMfg, requiredSize, deviceMfg);
 
                                             //get status information on a device
                                             uint deviceProblemCode;//status
