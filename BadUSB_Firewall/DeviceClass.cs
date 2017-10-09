@@ -1,10 +1,10 @@
-﻿/**
+/**
 ******************************************************************************
 * @file	   DeviceClass.cs
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Beinhaltet Informationen und Funktionen zu den USB-Geräteklassen
+* @brief   Includes information and features about the USB device classes
 ******************************************************************************
 */
 using System;
@@ -36,7 +36,7 @@ namespace BadUSB_Firewall
             }
         }
 
-        //Vorab getestete Gerätebeispiele
+        //Pre-tested device examples
         #region USBExample_Devices
         public void Fill_ExampleList()
         {
@@ -72,7 +72,7 @@ namespace BadUSB_Firewall
         #endregion
 
         #region USB Class Informations
-        //USB-Geräteklasseninformationen mit Verwendungsbeispielen
+        //USB device class information with usage examples
         // http://www.usb.org/developers/defined_class
         public static readonly Tuple<string, string, string, string, string, string>[] ClassCodes =
        {
@@ -109,7 +109,7 @@ namespace BadUSB_Firewall
         #endregion
 
         #region ServiceCodes
-        //Treiberbezeichnungen für bestimmte USB-Hubs
+        //Driver names for specific USB hubs
         private static readonly Tuple<string, string>[] ServiceCodes =
         {
             Tuple.Create("Enhanced USB-Controller" ,"usbehci"),
@@ -120,8 +120,8 @@ namespace BadUSB_Firewall
 
         #endregion
 
-        // USB-Geräte GUID-Codes und Gerätebeschreibung
-        //Guid siehe https://msdn.microsoft.com/en-us/library/windows/hardware/ff553426(v=vs.85).aspx
+        // USB devices GUID codes and device description
+        // Guid siehe https://msdn.microsoft.com/en-us/library/windows/hardware/ff553426(v=vs.85).aspx
         #region GUID Codes
         public static readonly Tuple<string, string, string>[] GuidCodes =
             {             //   Class    	GUID    	                                Device Description
@@ -141,61 +141,60 @@ namespace BadUSB_Firewall
             Tuple.Create("Dot4Print",       "{49CE6AC8-6F86-11D2-B1E5-0080C72E74A2}",   "Dot4 print functions."),
             Tuple.Create("61883",           "{7EBEFBC0-3200-11D2-B4C2-00A0C9697D07}",   "IEEE 1394 devices that support the IEC-61883 protocol device class. The 61883 component includes the 61883.sys protocol driver that transmits various audio and video data streams over the 1394 bus."),
             Tuple.Create("1394",            "{6BDD1FC1-810F-11D0-BEC7-08002BE2092F}",   "IEEE 1394 host controller"),
-            Tuple.Create("Smart Card Readers","{50DD5230-BA8A-11D1-BF5D-0000F805F530}","Smart card readers"),
-            Tuple.Create("Image",          "{6BDD1FC6-810F-11D0-BEC7-08002BE2092F}",   "Still-image capture devices like digital cameras, and scanners"),
-            Tuple.Create("IrDA Devices",   "{6BDD1FC5-810F-11D0-BEC7-08002BE2092F}",   "Infrared devices."),
-            Tuple.Create("Modem ",         "{4D36E96D-E325-11CE-BFC1-08002BE10318}",   "Modem devices"),
+            Tuple.Create("Smart Card Readers","{50DD5230-BA8A-11D1-BF5D-0000F805F530}", "Smart card readers"),
+            Tuple.Create("Image",          "{6BDD1FC6-810F-11D0-BEC7-08002BE2092F}",    "Still-image capture devices like digital cameras, and scanners"),
+            Tuple.Create("IrDA Devices",   "{6BDD1FC5-810F-11D0-BEC7-08002BE2092F}",    "Infrared devices."),
+            Tuple.Create("Modem ",         "{4D36E96D-E325-11CE-BFC1-08002BE10318}",    "Modem devices"),
             Tuple.Create("Multifunction Devices","{4D36E971-E325-11CE-BFC1-08002BE10318}","Combo cards, such as a PCMCIA modem and netcard adapter."),
-            Tuple.Create("Keyboard",       "{4D36E96B-E325-11CE-BFC1-08002BE10318}",   "Keyboards"),
-             Tuple.Create("Mouse",         "{4D36E96F-E325-11CE-BFC1-08002BE10318}",   "Mice and pointing devices"),
-            Tuple.Create("Media",          "{4D36E96C-E325-11CE-BFC1-08002BE10318}",   "Audio and video devices"),
-            Tuple.Create("Net",            "{4D36E972-E325-11CE-BFC1-08002BE10318}",   "Network adapters"),
-            //Tuple.Create("Ports",	    "{4D36E978-E325-11CE-BFC1-08002BE10318}",	"Serial and parallel ports"),
-            Tuple.Create("SCSIAdapter",    "{4D36E97B-E325-11CE-BFC1-08002BE10318}",   "SCSI and RAID controllers"),
-            Tuple.Create("Storage",        "{71A27CDD-812A-11D0-BEC7-08002BE2092F}",   "Storage devices."),
-            Tuple.Create("System",         "{4D36E97D-E325-11CE-BFC1-08002BE10318}",   "For System buses, bridges, etc."),
-            Tuple.Create("Unknown",        "{4D36E97E-E325-11CE-BFC1-08002BE10318}",   "(Reserved for system use) For  Enumerated devices where the system cannot determine the type installed under this class."),
-            Tuple.Create("USB",            "{36FC9E60-C465-11CF-8056-444553540000}",   "USB Drivers for this class are system-supplied."),
-            Tuple.Create("USB Device",     "{88BAE032-5A81-49f0-BC3D-A4FF138216D6}",   "All the USB devices that don't belong to another USB-Class. Not used for the USB host controllers and the USB hubs."),
-            Tuple.Create("USB Device",     "{A5DCBF10-6530-11D2-901F-00C04FB951ED}",   "Devices that are attached to a USB hub."),
-            Tuple.Create("USB HC",         "{3ABF6F2D-71C4-462A-8A92-1E6861E6AF27}",   "USB Host controller devices."),
-            Tuple.Create("USB HUB",        "{F18A0E88-C30C-11D0-8815-00A0C906BED8}",   "USB hub devices."),
-            Tuple.Create("WDP",            "{EEC5AD98-8080-425F-922A-DABF3DE3F69A}",   "WDP = Windows Portable Devices.")
+            Tuple.Create("Keyboard",       "{4D36E96B-E325-11CE-BFC1-08002BE10318}",    "Keyboards"),
+             Tuple.Create("Mouse",         "{4D36E96F-E325-11CE-BFC1-08002BE10318}",    "Mice and pointing devices"),
+            Tuple.Create("Media",          "{4D36E96C-E325-11CE-BFC1-08002BE10318}",    "Audio and video devices"),
+            Tuple.Create("Net",            "{4D36E972-E325-11CE-BFC1-08002BE10318}",    "Network adapters"),
+            //Tuple.Create("Ports",	    "{4D36E978-E325-11CE-BFC1-08002BE10318}",	    "Serial and parallel ports"),
+            Tuple.Create("SCSIAdapter",    "{4D36E97B-E325-11CE-BFC1-08002BE10318}",    "SCSI and RAID controllers"),
+            Tuple.Create("Storage",        "{71A27CDD-812A-11D0-BEC7-08002BE2092F}",    "Storage devices."),
+            Tuple.Create("System",         "{4D36E97D-E325-11CE-BFC1-08002BE10318}",    "For System buses, bridges, etc."),
+            Tuple.Create("Unknown",        "{4D36E97E-E325-11CE-BFC1-08002BE10318}",    "(Reserved for system use) For  Enumerated devices where the system cannot determine the type installed under this class."),
+            Tuple.Create("USB",            "{36FC9E60-C465-11CF-8056-444553540000}",    "USB Drivers for this class are system-supplied."),
+            Tuple.Create("USB Device",     "{88BAE032-5A81-49f0-BC3D-A4FF138216D6}",    "All the USB devices that don't belong to another USB-Class. Not used for the USB host controllers and the USB hubs."),
+            Tuple.Create("USB Device",     "{A5DCBF10-6530-11D2-901F-00C04FB951ED}",    "Devices that are attached to a USB hub."),
+            Tuple.Create("USB HC",         "{3ABF6F2D-71C4-462A-8A92-1E6861E6AF27}",    "USB Host controller devices."),
+            Tuple.Create("USB HUB",        "{F18A0E88-C30C-11D0-8815-00A0C906BED8}",    "USB hub devices."),
+            Tuple.Create("WDP",            "{EEC5AD98-8080-425F-922A-DABF3DE3F69A}",    "WDP = Windows Portable Devices.")
         };
         #endregion
 
-
         #region Accepted GUID List
-        //Akzeptierte GUID-Codes
+        //Accepted GUID-Codes
         public static readonly List<Guid> AcceptedGuid = new List<Guid>
             {
-              //new Guid("{4D36E965-E325-11CE-BFC1-08002BE10318}"), // CD/DVD/Blu-ray drives 
-              //new Guid("{E0CBF06C-CD8B-4647-BB8A-263B43F0f974}"), //"This class includes all Bluetooth devices"),
+              //new Guid("{4D36E965-E325-11CE-BFC1-08002BE10318}"), //  "CD/DVD/Blu-ray drives"), 
+              //new Guid("{E0CBF06C-CD8B-4647-BB8A-263B43F0f974}"), //  "This class includes all Bluetooth devices"),
               //new Guid("{4D36E967-E325-11CE-BFC1-08002BE10318}"), //	"Hard drives"),//second device from usb mass storage
-                new Guid("{745A17A0-74D3-11D0-B6FE-00A0C90F57DA}"),	//"The USB human interface device class (USB HID class) is a part of the USB specification for computer peripherals: it specifies a device class (a type of computer hardware) for human interface devices such as keyboards, mice, game controllers and alphanumeric display devices"),
-              //new Guid("{50DD5230-BA8A-11D1-BF5D-0000F805F530}"), //"This class includes smart card readers"),
-                new Guid("{6BDD1FC6-810F-11D0-BEC7-08002BE2092F}"),	//"This class includes still-image capture devices, digital cameras, and scanners"),
-              //new Guid("{6BDD1FC5-810F-11D0-BEC7-08002BE2092F}"),//   "This class includes infrared devices."),
-                new Guid("{4D36E96D-E325-11CE-BFC1-08002BE10318}"),//   "Modem devices"),
-              //new Guid("{4D36E971-E325-11CE-BFC1-08002BE10318}"),//"This class includes combo cards, such as a PCMCIA modem and netcard adapter."),
-                new Guid("{4D36E96B-E325-11CE-BFC1-08002BE10318}"),//	"Keyboards"),
-                new Guid("{4D36E96F-E325-11CE-BFC1-08002BE10318}"),//	"Mice and pointing devices"),
-              //new Guid("{4D36E96C-E325-11CE-BFC1-08002BE10318}"),//	"Audio and video devices"),
-                new Guid("{4D36E972-E325-11CE-BFC1-08002BE10318}"),//	"Network adapters"),
-              //new Guid("{71A27CDD-812A-11D0-BEC7-08002BE2092F}"),//   "Storage devices..."),
-              //new Guid("{4D36E97D-E325-11CE-BFC1-08002BE10318}"),//	"System buses, bridges, etc."),
-                new Guid("{36FC9E60-C465-11CF-8056-444553540000}"),//	"Drivers for this class are system-supplied."),
-				new Guid("{4D36E97B-E325-11CE-BFC1-08002BE10318}"),//   "SCSI and RAID controllers"),
-              //new Guid("{88BAE032-5A81-49f0-BC3D-A4FF138216D6}"),//   "USBDevice includes all USB devices that do not belong to another class. This class is not used for USB host controllers and hubs."),
-                new Guid("{A5DCBF10-6530-11D2-901F-00C04FB951ED}"),//   "USB devices that are attached to a USB hub"),
-              //new Guid("{3ABF6F2D-71C4-462A-8A92-1E6861E6AF27}"),//   "The GUID_DEVINTERFACE_USB_HOST_CONTROLLER device interface class is defined for USB host controller devices"),
-              //new Guid("{F18A0E88-C30C-11D0-8815-00A0C906BED8}"),//   "The GUID_DEVINTERFACE_USB_HUB device interface class is defined for USB hub devices."),
-                new Guid("{EEC5AD98-8080-425F-922A-DABF3DE3F69A}")       //wdp windows portable devices
+                new Guid("{745A17A0-74D3-11D0-B6FE-00A0C90F57DA}"),	//  "The USB human interface device class (USB HID class) is a part of the USB specification for computer peripherals: it specifies a device class (a type of computer hardware) for human interface devices such as keyboards, mice, game controllers and alphanumeric display devices"),
+              //new Guid("{50DD5230-BA8A-11D1-BF5D-0000F805F530}"), //  "This class includes smart card readers"),
+                new Guid("{6BDD1FC6-810F-11D0-BEC7-08002BE2092F}"),	//  "This class includes still-image capture devices, digital cameras, and scanners"),
+              //new Guid("{6BDD1FC5-810F-11D0-BEC7-08002BE2092F}"), //  "This class includes infrared devices."),
+                new Guid("{4D36E96D-E325-11CE-BFC1-08002BE10318}"), //  "Modem devices"),
+              //new Guid("{4D36E971-E325-11CE-BFC1-08002BE10318}"), //  "This class includes combo cards, such as a PCMCIA modem and netcard adapter."),
+                new Guid("{4D36E96B-E325-11CE-BFC1-08002BE10318}"), //	"Keyboards"),
+                new Guid("{4D36E96F-E325-11CE-BFC1-08002BE10318}"), //	"Mice and pointing devices"),
+              //new Guid("{4D36E96C-E325-11CE-BFC1-08002BE10318}"), //	"Audio and video devices"),
+                new Guid("{4D36E972-E325-11CE-BFC1-08002BE10318}"), //	"Network adapters"),
+              //new Guid("{71A27CDD-812A-11D0-BEC7-08002BE2092F}"), //   "Storage devices..."),
+              //new Guid("{4D36E97D-E325-11CE-BFC1-08002BE10318}"), //	"System buses, bridges, etc."),
+                new Guid("{36FC9E60-C465-11CF-8056-444553540000}"), //	"Drivers for this class are system-supplied."),
+				new Guid("{4D36E97B-E325-11CE-BFC1-08002BE10318}"), //   "SCSI and RAID controllers"),
+              //new Guid("{88BAE032-5A81-49f0-BC3D-A4FF138216D6}"), //   "USBDevice includes all USB devices that do not belong to another class. This class is not used for USB host controllers and hubs."),
+                new Guid("{A5DCBF10-6530-11D2-901F-00C04FB951ED}"), //   "USB devices that are attached to a USB hub"),
+              //new Guid("{3ABF6F2D-71C4-462A-8A92-1E6861E6AF27}"), //   "The GUID_DEVINTERFACE_USB_HOST_CONTROLLER device interface class is defined for USB host controller devices"),
+              //new Guid("{F18A0E88-C30C-11D0-8815-00A0C906BED8}"), //   "The GUID_DEVINTERFACE_USB_HUB device interface class is defined for USB hub devices."),
+                new Guid("{EEC5AD98-8080-425F-922A-DABF3DE3F69A}")  //   "wdp windows portable devices"
             };
         #endregion
 
         /// <summary>
-        /// Gefährlich eingestufte Geräteklassen als GUID-Codes
+        /// Dangerously classified device classes as GUID codes
         /// </summary>
         public static readonly List<string> ThreatGuid = new List<string>{"{4D36E96B-E325-11CE-BFC1-08002BE10318}",
                                                                             "{4D36E96F-E325-11CE-BFC1-08002BE10318}",
@@ -204,7 +203,7 @@ namespace BadUSB_Firewall
                                                                             "{745A17A0-74D3-11D0-B6FE-00A0C90F57DA}"};
 
         /// <summary>
-        /// Gefährlich eingestufte Geräteklassen als Klassen-Codes
+        /// Dangerously Classified Device Classes as Class Codes
         /// </summary>
         public static readonly Tuple<string, string, string, string>[] ThreatClass =
         {
@@ -217,7 +216,7 @@ namespace BadUSB_Firewall
         };
 
         /// <summary>
-        /// Verdächtig eingestufte Geräteklasse
+        /// Suspiciously classified device class
         /// </summary>
         public static readonly Tuple<string, string, string, string>[] SuspectedClass =
        {
@@ -225,10 +224,10 @@ namespace BadUSB_Firewall
         };
 
         /// <summary>
-        /// Funktion zum Überprüfen, ob das zu überprüfende Gerät als
-        /// verdächtig eingestuft wird.
+        /// Function to check whether the device to be tested is to be used as a
+        ///  suspiciously classified.
         /// </summary>
-        /// <param name="device">Zu überprüfendes USB-Gerät</param>
+        /// <param name="device">USB device to be checked</param>
         public static bool ContainsSuspectedClass(USBDeviceInfo device)
         {
             bool result = false;
@@ -247,7 +246,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüfung ob es sich um ein HID-Gerät handelt
+        ///Check whether it is an HID device
         /// </summary>
         /// <param name="">Param Description</param>
         public static bool IsHid(string usbClass, string usbSubClass, string usbProtocol, string classGuid)
@@ -259,7 +258,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüfung ob es sich um ein Verbundgerät handelt
+        /// Check whether it is a compound device
         /// </summary>
         /// <param name="">Param Description</param>
         public static bool IsComposite(string usbClass, string usbSubClass, string usbProtocol, string service)
@@ -278,7 +277,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüfung ob es sich um ein Netzwerkgerät handelt
+        /// Check whether it is a network device
         /// </summary>
         /// <param name="">Param Description</param>
         public static bool IsNetwork(string usbClass, string usbSubClass, string usbProtocol, string classGuid)
@@ -296,7 +295,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüfung ob es sich um eine Tastatur handelt
+        /// Check whether it is keyboard device
         /// </summary>
         /// <param name="">Param Description</param>
         public static bool IsKeyboard(string usbClass, string usbSubClass, string usbProtocol, string classGuid, string service)
@@ -318,7 +317,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüfung ob es sich um ein Zeigegerät handelt
+        /// Check whether it is a pointing device device
         /// </summary>
         /// <param name="">Param Description</param>
         public static bool IsPointingDevice(string usbClass, string usbSubClass, string usbProtocol, string classGuid, string service)
@@ -340,10 +339,10 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion zum Überprüfen, ob das zu überprüfende Gerät als
-        /// gefährlich eingestuft wird.
+        /// Function to check whether the device to be tested is to be used as a
+        /// is classified as dangerous.
         /// </summary>
-        /// <param name="device">Zu überprüfendes USB-Gerät</param>
+        /// <param name="device">USB device to be checked</param>
         public static bool ContainsThreatClass(USBDeviceInfo device)
         {
             bool result = false;
@@ -372,7 +371,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Liefert den Index zu vorhandenen Geräteinformationen und Beispielen zurück
+        /// Returns the index to existing device information and examples
         /// </summary>
         /// <param name="">Param Description</param>
         public static int IndexClass(USBDeviceInfo device)
@@ -394,7 +393,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Liefert den Gerätetyp zurück
+        /// Returns the device type
         /// </summary>
         /// <param name="">Param Description</param>
         public static string GetClassDevice(USBDeviceInfo tempDevice)
