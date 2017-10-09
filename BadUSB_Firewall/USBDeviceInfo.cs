@@ -1,10 +1,10 @@
-﻿/**
+/**
 ******************************************************************************
 * @file	   USBDeviceInfo.cs
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Stellt ein USB-Objekt dar.
+* @brief   Represents a USB object.
 ******************************************************************************
 */
 using System;
@@ -22,27 +22,27 @@ namespace BadUSB_Firewall
     /// <param name="">Param Description</param>
     public class USBDeviceInfo : IEquatable<USBDeviceInfo>
     {
-        //Erzeugt ein leeres USBDeviceInfo-Objekt und weist die Werte bei der Geräteerkennung zu.
+        //Creates an empty USBDeviceInfo object and assigns the values for device detection.
         public USBDeviceInfo()
         {
             Checksum = "";
-            ClassGuid = "";//Guid for the device's setup class
-            CompatibleID = "";//ID string(s) containign the device's class and (optional) subclass and protocol
+            ClassGuid = "";                 //Guid for the device's setup class
+            CompatibleID = "";              //ID string(s) containign the device's class and (optional) subclass and protocol
             Description = "";
             DateAdded = "";
             DateConnected = "";
             DeviceID = "";
             DeviceType = "";
-            HardwareID = "";//ID string containing the device's Vendor ID and Product ID
+            HardwareID = "";                //ID string containing the device's Vendor ID and Product ID
             FirstUsage = "Yes";
-            FirstLocationInformation = "";//USB device or iProduct string
-            LastLocationInformation = "";//USB device or iProduct string
-            Manufacturer = "";//device manufacturer
+            FirstLocationInformation = "";  //USB device or iProduct string
+            LastLocationInformation = "";   //USB device or iProduct string
+            Manufacturer = "";              //device manufacturer
             Name = "";
             ProductID = "";
             ProductName = "";
             SerialNumber = "";
-            Service = "";//Name of the device's Service key
+            Service = "";                   //Name of the device's Service key
             Status = "";
             USB_Class = "";
             USB_SubClass = "";
@@ -53,7 +53,7 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Ein USBDeviceInfo-Objekt anhand eines ManaementBaseObjekt (mittels WMI-Abfrage erhalten)erstellen.
+        /// Obtain a USBDeviceInfo object from a ManaementBase object (obtained through a WMI query).
         /// </summary>
         /// <param name="">Param Description</param>
         public USBDeviceInfo(ManagementBaseObject device)
@@ -231,7 +231,10 @@ namespace BadUSB_Firewall
         public string VendorID { get; set; }
         public string VendorName { get; set; }
 
-        //Prüfsumme erstellen
+        /// <summary>
+        /// Create checksum
+        /// </summary>
+        /// <param name="">Param Description</param>
         public static string GenerateHashCode(string data)
         {
             string generatedHash = "";
@@ -266,7 +269,7 @@ namespace BadUSB_Firewall
         /// Description
         /// </summary>
         /// <param name="">Param Description</param>
-        //Outsorce code generation to c++ dll
+        //Outsorce code generation to c++ dll ?
         public void generate_HashCodeParentDevice(string childData)
         {
             try
@@ -281,7 +284,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Portanschluss eines Gerätes über die Registry ermitteln
+        /// Port connection of a device via the registry
         /// </summary>
         /// <param name="">Param Description</param>
         private string GetDeviceLocation(string deviceID)
