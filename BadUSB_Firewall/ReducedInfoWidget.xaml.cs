@@ -1,10 +1,10 @@
-﻿/**
+/**
 *************************************************************************************
 * @file	   ReducedInfoWidget.xaml.cs
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Zeigt ein Fenster mit Informationen in einer reduzierten Darstellungsform
+* @brief   Displays a window with information in a reduced display form
 *************************************************************************************
 */
 using System;
@@ -25,7 +25,6 @@ namespace BadUSB_Firewall
         private readonly int _mKeyboards;
         private readonly int _mPointing;
         private readonly int _mNetwork;
-        //private string mTitle = "BadUSB-Software-Firewall";
         private Uri _uri;
         private ImageSource _imgSource;
 
@@ -33,7 +32,7 @@ namespace BadUSB_Firewall
         {
             if (File.Exists(Path.Combine(BadUSBFirewall.BaseDir, "Resources", imgPath)))
             {
-                //Pfad für das dargestellte Symbol, welches auch in der Hauptanwendung verwendet wird
+                //Path for the displayed symbol, which is also used in the main application
                 _uri = new Uri(Path.Combine(BadUSBFirewall.BaseDir, "Resources", imgPath), UriKind.Absolute);
                 _imgSource = new BitmapImage(_uri);
             }
@@ -53,7 +52,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Aktualisiert die Anzahl der dargestellten Zeigegeräte
+        /// Updates the number of pointing devices displayed
         /// </summary>
         /// <param name="">Param Description</param>
         public void PointingDevices_Now(int value)
@@ -62,7 +61,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Aktualisiert die Anzahl der dargestellten Tastaturen
+        /// Updates the number of keyboard devices displayed
         /// </summary>
         /// <param name="">Param Description</param>
         public void Keyboards_Now(int value)
@@ -71,7 +70,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Aktualisiert die Anzahl der dargestellten Netzwerkadapter
+        /// Updates the number of network adapters devices displayed
         /// </summary>
         /// <param name="">Param Description</param>
         public void NetworkDevices_Now(int value)
@@ -80,7 +79,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Aktualisiert die Anzahl der zu behandelnden USB-Geräte innerhalb der GUI an.
+        /// Updates the number of USB devices to be treated within the GUI.
         /// </summary>
         /// <param name="">Param Description</param>
         public void UsbDevices_Now(int value)
@@ -89,7 +88,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Aktualisiert die Anzahl der zu behandelnden Schnittstellen in der GUI an.
+        /// Updates the number of interfaces to be handled in the GUI.
         /// </summary>
         /// <param name="">Param Description</param>
         public void InterfaceDevices_Now(int value)
@@ -98,7 +97,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Ändert das aktuelle Symbol
+        /// Changes tha actual security symbol
         /// </summary>
         /// <param name="">Param Description</param>
         public void SetImage(string imgPath)
