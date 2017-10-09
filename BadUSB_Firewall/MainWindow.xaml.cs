@@ -1,10 +1,10 @@
-﻿/**
+/**
 ******************************************************************************
 * @file	   MainWindow.xaml.cs
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Hauptlogik der Software-Firewall
+* @brief   Main logic of the software firewall
 ******************************************************************************
 */
 #region using_directives
@@ -17,7 +17,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Management;
-using Microsoft.Win32;  	// Wird für Änderungen der Registrierungseinstellungen benötigt
+using Microsoft.Win32;  	// Required for changes of the registry settings
 using System.Diagnostics;
 using System.Security.Principal;
 using System.ComponentModel;
@@ -36,7 +36,7 @@ namespace BadUSB_Firewall
 {
     #region Public_Enum
     /// <summary>
-    /// Verwendete Fehlercodes
+    /// Used error codes in the project
     /// </summary>
     public enum ErrorCode
     {
@@ -47,13 +47,13 @@ namespace BadUSB_Firewall
         Success = 0,
         ErrorInvalidData = 13,
         InvalidHandleError = 6,
-        ErrorSuccessRebootRequired = 3010, // (0xBC2) The requested operation is successful. Changes will not be effective until the system is rebooted.
-        ErrorNotDisableable = -536870351,//unchecked((int)0xe0000231),
-        ErrorNoSuchDevinst = -536870389 //0xe000020b
+        ErrorSuccessRebootRequired = 3010,  //(0xBC2) The requested operation is successful. Changes will not be effective until the system is rebooted.
+        ErrorNotDisableable = -536870351,   //unchecked((int)0xe0000231),decimal -536870351(on 32bit system) or 3758096945  
+        ErrorNoSuchDevinst = -536870389     //0xe000020b
     }
 
     /// <summary>
-    /// Geräteeigenschaften-Codes für Registrierung
+    /// Device properties codes for registration
     /// </summary>
     public enum SpdrpCodes : uint
     {
@@ -69,7 +69,7 @@ namespace BadUSB_Firewall
 
     #endregion
     #region Classdefinitions
-    //Wird für WM_DEVICECHANGE benötigt
+    //Required for WM_DEVICECHANGE
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct DEV_BROADCAST_DEVICEINTERFACE
     {
@@ -82,7 +82,7 @@ namespace BadUSB_Firewall
     }
     #region Class_DeviceEntry
     /// <summary>
-    /// Klasse, welche für das Firewall-Regeln Fenster benötigt wird(FirewallRules.xaml and FirewallRules.xaml.cs
+    /// Class, which is required for the firewall rules window (FirewallRules.xaml and FirewallRules.xaml.cs
     /// </summary>
     public class DeviceEntry : INotifyPropertyChanged
     {
@@ -390,14 +390,14 @@ namespace BadUSB_Firewall
     #endregion
     #region Class_USBDevice
     /// <summary>
-    /// Objekt welches für neu erkannte Geräte verwendet und in der GUI angezeigt wird 
+    /// Object used for newly discovered and displayed USB-devices in the GUI
     /// </summary>
     public class USBDevice
     {
         public USBDevice(USBDeviceInfo device)
         {
-            mDevice = device;//Hauptgerät
-            mInterfaces = new ObservableCollection<USBDeviceInfo>();//eventuelle Schnittstellen
+            mDevice = device;   //Main-device
+            mInterfaces = new ObservableCollection<USBDeviceInfo>();//possible interfaces
         }
         public string mPosition { get; set; }
         public USBDeviceInfo mDevice { get; set; }
@@ -406,7 +406,7 @@ namespace BadUSB_Firewall
     #endregion
     #region Class_ChangeStateDevice
     /// <summary>
-    /// USB Objekt für die Weiß- und Blackliste
+    /// USB Object for the white and black list
     /// </summary>
     public class ChangeStateDevice
     {
@@ -456,12 +456,12 @@ namespace BadUSB_Firewall
     #endregion
     #endregion
     /// <summary>
-    /// Interaktionslogik für MainWindow.xaml
+    /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class BadUSBFirewall : INotifyPropertyChanged
     {
         #region Guid_Codes
-        //GUID Codes, welche in der Anwendung erkannt werden
+        //GUID codes, which are recognized in the application
         private static readonly Guid GUID_DEVCLASS_NETWORK = new Guid("{4D36E972-E325-11CE-BFC1-08002BE10318}");
         private static readonly Guid Guid_USBDevice = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
         private static readonly Guid Guid_HID = new Guid("4D1E55B2-F16F-11CF-88CB-001111000030");
@@ -473,13 +473,16 @@ namespace BadUSB_Firewall
         private static List<string> TempList = new List<string>();
         private string _imgName = "green.PNG";
         private string _appPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-        private const int ERROR_NOT_DISABLEABLE = unchecked((int)0xe0000231);// decimal -536870351(on 32bit system) or 3758096945 ERROR_NOT_DISABLEABLE 
+        //Traylist-icon
+        readonly System.Windows.Forms.NotifyIcon _appIcon = new System.Windows.Forms.NotifyIcon();
+
         volatile bool _isRunning = false;
         private bool _continueApp = false;
         private bool _stopApp = false;
 
-        //Informationsfenster das beim ersten Start angezeigt wird
+        //Information window that is displayed at first application start
         private FirstStart _firstStartWindow;
+        readonly bool _firstRun = false;
 
         private static bool _isAdmin = false;
         private static int _uSbElementsInList = 0;
@@ -492,8 +495,7 @@ namespace BadUSB_Firewall
         private static int _sysNetworkAdapterExit = 0;
         private static int _sysNetworkAdapterStart = 0;
         private static int _sysNetworkAdapterNow = 0;
-
-        readonly bool _firstRun = false;
+       
         bool _addDifDevices = false;
         int _cnt = 0;
 
@@ -505,21 +507,20 @@ namespace BadUSB_Firewall
         private ObservableCollection<NetAdapterItem> _netItems = new ObservableCollection<NetAdapterItem>();
         private ObservableCollection<USBDevice> _usbDevices = new ObservableCollection<USBDevice>();
         private ObservableCollection<USBDeviceInfo> _usbItems = new ObservableCollection<USBDeviceInfo>();
-        //Changestate Klasse
+        //Changestate class
         private static readonly ChangeDeviceState CdsLib = new ChangeDeviceState();
-        //Datenbanken Klasse
+        //Database class
         private DeviceLists _devLists;
-        //Trayleisten-Symbol
-        readonly System.Windows.Forms.NotifyIcon _appIcon = new System.Windows.Forms.NotifyIcon();
+        
         #endregion
-        //Für WM_Devicechange benötigte Variablen und Strukturen
+        //Variables and structures required for WM_Devicechange
         #region Native_Functions
-        private const int DBT_DEVICEARRIVAL = 0x8000; //A device or piece of media has been inserted and is now available.        
-        private const int DBT_DEVICEREMOVECOMPLETE = 0x8004; // A device or piece of media has been removed.
-        private const int DBT_CONFIGCHANGED = 0x0018;//The current configuration has changed, due to a dock or undock.
-        private const int DBT_DEVTYP_DEVICEINTERFACE = 0x00000005;//Class of devices. 
-        public const int WM_DEVICECHANGE = 0x0219; // Notifies an application of a change to the hardware configuration of a device or the computer.
-        private static IntPtr notificationHandle;//device notification handle
+        private const int DBT_DEVICEARRIVAL = 0x8000;               //A device or piece of media has been inserted and is now available.        
+        private const int DBT_DEVICEREMOVECOMPLETE = 0x8004;        // A device or piece of media has been removed.
+        //private const int DBT_CONFIGCHANGED = 0x0018;             //The current configuration has changed, due to a dock or undock.
+        private const int DBT_DEVTYP_DEVICEINTERFACE = 0x00000005;  //Class of devices. 
+        public const int WM_DEVICECHANGE = 0x0219;                  // Notifies an application of a change to the hardware configuration of a device or the computer.
+        private static IntPtr notificationHandle;                   //device notification handle
 
         //Retrieved by handling WM_CHANGEDEVICE Message's LPARAM property value. 
         [StructLayout(LayoutKind.Sequential)]
@@ -539,28 +540,28 @@ namespace BadUSB_Firewall
         #endregion
 
         /// <summary>
-        /// Hauptklasse der Anwendung
+        /// Main class of application
         /// </summary>
         /// <param name="">Param Description</param>
         public BadUSBFirewall()
         {
             try
             {
-                //Ladebildschirm
+                //loading screen
                 var splash = new SplashScreen();
                 splash.Show();
-                //Erhöhe die Prozesspriorität
+                //Increase process priority
                 Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.AboveNormal;
 
                 _firstRun = Settings.Default.FirstStart;
-                //Initialisierung der Anwendungskomponenten
+                //Initialization of application components
                 InitializeComponent();
 
                 UsbTreeView.ItemsSource = USBDevices;
                 DataContext = this;
-                //Aufruf der Initialisierungsfunktion
+                //Call the initialization function
                 ApplicationInit();
-                //Schließe Ladebildschirm
+                //Close charge screen
                 splash.Close();
 
                 if (Settings.Default.StopApplication)
@@ -607,7 +608,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Anwendungsinitialisierungs-Funktion
+        /// Application initialization function
         /// </summary>
         /// <param name="">Param Description</param>
         private void ApplicationInit()
@@ -635,78 +636,78 @@ namespace BadUSB_Firewall
                     };
 
             _devLists = new DeviceLists();
-            //Eventhandler für durchgeführte Operationen in der White-oder Blacklistdatenbank
+            //Event handler for performed operations in the white or blacklist database
             _devLists.WhiteListAdded += BlackToWhiteList;
             _devLists.BlackListAdded += WhiteToBlackList;
 
-            //Windows Logoff oder herunterfahren erkennen
+            //Windows Logoff or Shut Down Detect
             SystemEvents.SessionEnding += OnSessionEnding;
 
             Settings.Default.Upgrade();
 
             build_NetList();
 
-            //Anzahl der Tastaturen, Zeige- und Netzwerkgeräte bei Programmstart für
-            // letzte Beendigung und aktuelle Anzahl ermitteln
-            //Netzwerkgeräte
-            SysNetworkAdapterStart = NetItems.Count;                        //Startanzahl
-            SysNetworkAdapterNow = NetItems.Count;                          //Anzahl jetzt gerade (Bei Programmstart = Startwert)
-            SysNetworkAdapterExit = Settings.Default.AppExitNetworkAdapters;//Anzahl bei letzter Programmbeendigung
-            //Tastaturen
+            // Number of keyboards, pointing and network devices at program start for
+            // Determine the last termination and the current number
+            // network devices
+            SysNetworkAdapterStart = NetItems.Count;                        //starting amount
+            SysNetworkAdapterNow = NetItems.Count;                          //Number now (At program start = Start value)
+            SysNetworkAdapterExit = Settings.Default.AppExitNetworkAdapters;//Number on last program termination
+            //Keyboards
             SysKeyboardStart = detect_KeyboardNow();
             SysKeyboardNow = SysKeyboardStart;
             SysKeyboardExit = Settings.Default.AppExitKeyboards;
-            //Zeigegeräte
+            //Pointing devices
             SysPointingDevicesStart = detect_PointingDevicesNow();
             SysPointingDevicesNow = SysPointingDevicesStart;
             SysPointingDevicesExit = Settings.Default.AppExitPointingDevices;
 
             if (!Settings.Default.FirstStart && Settings.Default.ContinueApplication)
             {
-                //Erstellen der temporären Geräteliste, welche alle bisherigen
-                //angeschlossenen Geräte und erstmaliges Anschlussdatum beinhaltet.
+                // Create the temporary device list, which contains all previous
+                // connected devices and the initial connection date.
                 _devLists.build_TemporaryDevicesList();
             }
 
             if (Settings.Default.FirstStart || Settings.Default.StopApplication)
             {
-                //Bei erstmaligen Start aufgerufene Funktion
+                // Called if it is the first application start
                 FirstApplicationRun();
             }
 
             if (Settings.Default.ContinueApplication)
             {
-                //Erkennen ob 32 oder 64Bit-OS verwendet wird
+                // Detect whether 32 or 64Bit OS is used
                 detect_OSVersion();
-                //Benutzerrechte erkennen
+                // Detect user rights
                 detect_UserRights();
-                //Markierungen im Menü setzen
+                // Set the markers in the menu
                 set_Markers();
-                //Temporäre Listen anhand der Datenbanken erstellen
-                // White,- Black,- Initial- und DeviceRuleList.
-                //zur schnelleren Überprüfung der Checksumme
+                // Create temporary lists using the databases
+                // White, - Black, - Initial and DeviceRuleList.
+                // to check the checksum more quickly
                 _devLists.build_Lists();
 
-                //Netzwerkgeräte Events zur Erkennung von
-                // NetworkAvailabilityChanged und NetworkAddressChanged Ereignissen
+                // Network devices Events for detecting
+                // NetworkAvailabilityChanged and NetworkAddressChanged events
                 EstablishNetworkEvents();
 
 
                 if (!Settings.Default.FirstStart)
                 {
-                    //Erkennung ob bereits bei Programmstart blockierte Geräte vorhanden sind
+                    // Detection of devices that are already blocked when the program is started
                     detect_Blocked();
 
                     if (Settings.Default.Detect_USBChanges)
                     {
-                        //Abweichungen der Netzwerkadapter, Tastaturen und Zeigegeräte bei Programmstart anzeigen
+                        // Display deviations of network adapters, keyboards and pointing devices at program start
                         detect_NetworkAdaptersChanges();
                         detect_KeyboardChanges();
                         detect_PointingDevicesChanges();
 
-                        //Erstellen einer Liste der aktuell angeschlossenen USB-Geräte
+                        // Create a list of currently connected USB devices
                         create_DeviceState("NewStateListDB");
-                        //Vergleich zwischen der aktuellen und bei Programmende erstellten Geräteliste 
+                        // Comparison between the current device list created at program end
                         compare_DeviceState();
                     }
                 }
@@ -718,7 +719,7 @@ namespace BadUSB_Firewall
 
                 if (_addDifDevices)
                 {
-                    //Unterschiede der Geräteliste (Programmstart und Ende) werden der DifferenceList hinzugefügt
+                    // Differences of the device list (program start and end) are added to the DifferenceList
                     add_DifferencesToList();
                 }
 
@@ -728,7 +729,7 @@ namespace BadUSB_Firewall
                 }
             }
 
-            // Dem Taskleistensymbol werden Menüeinträge hinzugefügt
+            // Menu items are added to the traybar icon
             System.Windows.Forms.MenuItem item = new System.Windows.Forms.MenuItem();
             System.Windows.Forms.MenuItem item1 = new System.Windows.Forms.MenuItem();
             System.Windows.Forms.MenuItem item2 = new System.Windows.Forms.MenuItem();
@@ -745,7 +746,7 @@ namespace BadUSB_Firewall
             item2.Click += ExitApplication;
             _appIcon.ContextMenu = context;
 
-            //Erstellung des reduzierten Darstellungsfensters, welches über das Taskleistensymbol geöffnet werden kann
+            // Create the reduced display window, which can be opened via the traybar icon
             _noteWindow = new ReducedInfoWidget(_imgName, USBDevices.Count, UsbElementsInList,
                 SysKeyboardNow, SysPointingDevicesNow, SysNetworkAdapterNow);
             _noteWindow.Top = SystemParameters.VirtualScreenHeight - _noteWindow.Height -
@@ -754,13 +755,13 @@ namespace BadUSB_Firewall
                 (SystemParameters.VirtualScreenWidth - SystemParameters.WorkArea.Width);
             _noteWindow.Visibility = Visibility.Collapsed;
 
-            //Akzeptierte GUID-Liste erstellen für die Guid die bei einem DBT_DEVICEARRIVAL Ereignis erkannt werden.
+            // Create an approved GUID list for the guid that is detected by a DBT_DEVICEARRIVAL event.
             GuidDeviceList.Add(Guid_USBDevice);
             GuidDeviceList.Add(Guid_HID);
         }
 
         /// <summary>
-        /// Setzt die bei letztem Programmende vorhandenen Einstellungen in den Menüeinträgen 
+        /// Sets the settings in the menu entries, which where present at the last application termination
         /// </summary>
         /// <param name="">Param Description</param>
         private void set_Markers()
@@ -887,8 +888,8 @@ namespace BadUSB_Firewall
     #region Set_TextboxBackgroundColour
         
         /// <summary>
-        /// Hintergrundfarbe von Zeigegeräteboxen der GUI setzen
-        /// Werden bei Aufruf der Connected_Devices Funktion angezeigt
+        /// Set the background color of GUI pointer boxes
+        /// Displayed when calling the Connected_Devices function
         /// </summary>
         /// <param name="">Param Description</param>
         private void set_PointingBoxBackground(object sender, RoutedEventArgs e)
@@ -924,7 +925,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Hintergrundfarbe von Tastaturboxen der GUI setzen
+        /// Set background color of GUI keyboard boxes
         /// </summary>
         /// <param name="">Param Description</param>
         private void set_KeyboardBoxBackground(object sender, RoutedEventArgs e)
@@ -957,7 +958,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Hintergrundfarbe von den Netzwerkgeräteboxen in der GUI setzen
+        /// Set background color from the network device boxes in the GUI
         /// </summary>
         /// <param name="">Param Description</param>
         private void set_NetworkAdapterBoxBackground(object sender, RoutedEventArgs e)
@@ -990,7 +991,7 @@ namespace BadUSB_Firewall
         }
         #endregion
         /// <summary>
-        /// Rückgabe der Programmversion
+        /// Return the program version
         /// </summary>
         /// <param name="">Param Description</param>
         private string AssemblyVersion
@@ -1009,7 +1010,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Öffnet das reduzierte Darstellungsfenster
+        /// Opens the reduced display window
         /// </summary>
         /// <param name="">Param Description</param>
         private void ShowStatus(object sender, EventArgs e)
@@ -1021,7 +1022,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion zur Aufzeichnung der Log-Nachrichten
+        /// Function for recording the log messages
         /// </summary>
         /// <param name="">Param Description</param>
         private void LogWrite(string logMessage)
@@ -1040,16 +1041,16 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erkennen von Netzwerkereignissen einrichten
+        /// Detect network events
         /// </summary>
         /// <param name="">Param Description</param>
         private void EstablishNetworkEvents()
         {
             try
             {
-                //Tritt auf, wenn sich die Verfügbarkeit des Netzwerks ändert.
+                // Occurs when the availability of the network changes.
                 NetworkChange.NetworkAvailabilityChanged += Network_AvailabilityChangedEvent;
-                //Tritt auf, wenn sich die IP - Adresse einer Netzwerkschnittstelle ändert.
+                // Occurs when the IP address of a network interface changes.
                 NetworkChange.NetworkAddressChanged += Network_ChangedEvent;
             }
             catch (Exception ex)
@@ -1061,7 +1062,7 @@ namespace BadUSB_Firewall
 
         #region Device_Deactivation_Activation
         /// <summary>
-        /// Funktion zur deaktivierung eines USB-Gerätes
+        /// Function for deactivating a USB device
         /// </summary>
         /// <param name="">Param Description</param>
         private int disable_Device(string devName, string hardwareID, string classGuid, string devType, string firstLocation, string vendorID, string productID, bool autoMode, bool displayMessage)
@@ -1072,11 +1073,11 @@ namespace BadUSB_Firewall
 
             try
             {
-                //Wenn "Port" enthalten ist im Geräteanschluss, dann handelt es sich um das Hauptgerät
-                //und nicht um ein Schnittstellengerät
+                // If "Port" is included in the device port, then it is the main device
+                // and not an interface device
                 if (firstLocation.Contains("Port"))
                 {
-                    //Bei diesen Modi wird eine automatische Blockierung ohne Benutzernachfrage durchgeführt
+                    // In these modes, automatic blocking is performed without user request
                     if (autoMode || Settings.Default.BlockUSBDevices || Settings.Default.SafeMode)
                     {
                         removeDecision = true;
@@ -1090,7 +1091,7 @@ namespace BadUSB_Firewall
 
                     if (removeDecision)
                     {
-                        //Rufe die Deaktivierungsfunktion auf 
+                        // Call the disable function
                         conditionResult = CdsLib.disable_USBDevice(hardwareID, classGuid, firstLocation, true);
 
                         if (conditionResult != (int)ErrorCode.Success && displayMessage)
@@ -1115,14 +1116,14 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 MessageBox.Show("Exception in device disable: " + ex.Message, _appTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                //logerror
+               
                 return conditionResult;
             }
             return conditionResult;
         }
 
         /// <summary>
-        /// Aktvierung eines blockierten Gerätes
+        /// Activate a blocked device
         /// </summary>
         /// <param name="">Param Description</param>
         private int activate_Device(string name, string hardwareID, string classGuid, string deviceType, string deviceLocation, string checksum, bool autoMode)
@@ -1131,7 +1132,7 @@ namespace BadUSB_Firewall
             MessageBoxResult decision = MessageBoxResult.Yes;
             try
             {
-                //Benutzernachfrage zur Aktivierung
+                // User request for activation
                 if (Settings.Default.BlockUSBDevices == false)
                 {
                     //TODO detect if device was disabled -> than ask question
@@ -1145,10 +1146,10 @@ namespace BadUSB_Firewall
                     }
                 }
 
-                //Automatische Geräteaktivierung durchführen
+                // Perform automatic device activation
                 if (decision == MessageBoxResult.Yes)
                 {
-                    //Aufruf der Aktivierungsfunktion mit "ENABLE" Parameter
+                    // Call the activation function with the "ENABLE" parameter
                     result = CdsLib.ChangeDevState(hardwareID, classGuid, deviceLocation, true, ChangeDeviceStateParams.Enable);
                     switch (result)
                     {
@@ -1158,28 +1159,17 @@ namespace BadUSB_Firewall
                             result = CdsLib.ChangeDevState(hardwareID, classGuid, deviceLocation, true, ChangeDeviceStateParams.Enable);
                             break;
                         case (int)ErrorCode.ErrorNoSuchDevinst:
-                            //Reenumeration der Geräte erzwingen
+                            // Force device regeneration
                             CdsLib.ForceReenumeration();
 
                             result = CdsLib.ChangeDevState(hardwareID, classGuid, deviceLocation, true, ChangeDeviceStateParams.Enable);
 
                             if (result != (int)ErrorCode.Success)
                             {
-                                result = CdsLib.ChangeDevState(hardwareID, classGuid, deviceLocation, true, ChangeDeviceStateParams.Unremove);
-                                CdsLib.ForceReenumeration();
-
-                                if (result != (int)ErrorCode.Success)
-                                {
-                                    result = CdsLib.ChangeDevState(hardwareID, classGuid, deviceLocation, false, ChangeDeviceStateParams.Enable);
-
-                                    if (result != (int)ErrorCode.Success)
+                                    if (deviceLocation.Contains("Port"))
                                     {
-                                        if (deviceLocation.Contains("Port"))
-                                        {
-                                            ShowToastMessage("Device enable error", "Could not enable this device" + "\nPlease reconnect it again ", System.Windows.Forms.ToolTipIcon.Error);
-                                        }
+                                        ShowToastMessage("Device enable error", "Could not enable this device" + "\nPlease reconnect it again ", System.Windows.Forms.ToolTipIcon.Error);
                                     }
-                                }
                             }
                             break;
                         case (int)ErrorCode.Success:
@@ -1211,8 +1201,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Alle deaktivierten und in der GUI angezeigten Geräte aktivieren. Wird ausgeführt wenn der Benutzer in der GUI keine
-        /// Einzelauswahl vor Aufruf der Aktivierung trifft.
+        /// Enable all disabled devices displayed in the GUI. Is executed when the user in the GUI does not
+        /// Single selection before calling activation.
         /// </summary>
         /// <param name="">Param Description</param>
         private void activate_AllDevices()
@@ -1222,12 +1212,12 @@ namespace BadUSB_Firewall
             {
                 for (int i = 0; i < USBDevices.Count; i++)
                 {
-                    //Hauptgerät aktivieren. Im Normalfall werden die Schnittstellen hierdurch auch aktiviert
+                    // Activate the main unit. In normal cases, the interfaces are activated as well
                     activate_Device(USBDevices[i].mDevice.Name, USBDevices[i].mDevice.HardwareID, USBDevices[i].mDevice.ClassGuid, USBDevices[i].mDevice.DeviceType, USBDevices[i].mDevice.FirstLocationInformation, USBDevices[i].mDevice.Checksum, true);
 
                     for (int j = 0; j < USBDevices[i].mInterfaces.Count; j++)
                     {
-                        //Schnittstelle des Gerätes aktivieren
+                        // Activate the interface of the device
                         activate_Device(USBDevices[i].mInterfaces[j].Name, USBDevices[i].mInterfaces[j].HardwareID, USBDevices[i].mInterfaces[j].ClassGuid, USBDevices[i].mInterfaces[j].DeviceType, USBDevices[i].mInterfaces[j].FirstLocationInformation, USBDevices[i].mInterfaces[j].Checksum, true);
                     }
                 }
@@ -1241,8 +1231,8 @@ namespace BadUSB_Firewall
        
 
         /// <summary>
-        /// Klassenspezifische-Geräteblockierungsfunktion.
-        /// Auch zur Deaktivierung von Schnittstellen geeignet. 
+        /// Class-specific device blocking function.
+        /// Also suitable for deactivating interfaces.
         /// </summary>
         /// <param name="">Param Description</param>
         private void classSpecific_Blocking(USBDeviceInfo newDevice)
@@ -1274,7 +1264,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüfen ob im Menü eine Geräteklassenblockierung aktiviert wurde
+        /// Check whether a device class lock has been activated in the menu
         /// </summary>
         /// <param name="">Param Description</param>
         private bool device_ClassBlocking()
@@ -1284,7 +1274,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion zur Behandlung eines bei Geräteanschluss erkannten Gerätes.
+        /// Function for the treatment of a device detected at device connection.
         /// </summary>
         /// <param name="">Param Description</param>
         private void handle_NewDevice(USBDeviceInfo newDevice)
@@ -1293,26 +1283,26 @@ namespace BadUSB_Firewall
 
             try
             {
-                //Überprüfung ob Gerät in der Blacklist ist. Blacklist hat höchste Priorität
+                // Check if the device is in the blacklist. Blacklist has top priority
                 if (DeviceLists.findIn_BlackList(newDevice.Checksum))
                 {
-                    //Handelt es sich hierbei um ein Verbundgerät?
+                    // Is this a composite device?
                     if (DeviceClass.IsComposite(newDevice.USB_Class, newDevice.USB_SubClass, newDevice.USB_Protocol, newDevice.Service))
                     {
-                        //Nur Hauptgerät blockieren, da alle seine Schnittstellen automatisch mitblockiert(deaktiviert) werden.
+                        // Only block the main device since all its interfaces are automatically blocked (deactivated).
                         if (newDevice.FirstLocationInformation.Contains("Port"))
                         {
                             result = CdsLib.ChangeDevState(newDevice.HardwareID, newDevice.ClassGuid, newDevice.FirstLocationInformation,
                                 true, ChangeDeviceStateParams.DisableComposite);
                         }
                     }
-                    //Kein Verbundgerät, daher insgesamt eine Schnittstelle
+                    // No composite device, therefore a device with one interface
                     else
                     {
                         result = CdsLib.disable_USBDevice(newDevice.HardwareID, newDevice.ClassGuid, newDevice.FirstLocationInformation, true);
                     }
 
-                    //Anzahl der Geräteschnittstellen abfragen
+                    // Query the number of device interfaces
                     uint cnt = _devLists.get_Interfaces(newDevice.HardwareID, "BlackListDB");
                     if (result == (int)ErrorCode.Success)
                     {
@@ -1347,41 +1337,41 @@ namespace BadUSB_Firewall
 
                     }
                 }
-                //Überprüfung ob Gerät bereits in der Whitelist vorhanden ist.
+                // Check if the device already exists in the Whitelist.
                 else if (DeviceLists.findIn_WhiteList(newDevice.Checksum))
                 {
                     WhiteListFunctions(newDevice);
                 }
 
-                //Überprüfung der Initialliste
+                // Check the start list
                 else if (DeviceLists.findIn_InitialList(newDevice.Checksum))
                 {
-                    /*do nothing*/
+                    /*do nothing at the moment, could be adjusted like handling of the whitelist-devices*/
                 }
 
-                //Überprüfen ob Geräteklassenblockierung im Menü aktiviert wurde.
+                // Check whether device class blocking has been activated in the menu.
                 else if (device_ClassBlocking())
                 {
-                    //Netzwerkadapter blockieren
+                    // Block network adapter
                     if (Settings.Default.BlockNewNetworkAdapter && DeviceClass.IsNetwork(newDevice.USB_Class, newDevice.USB_SubClass, newDevice.USB_Protocol, newDevice.ClassGuid))
                     {
                         classSpecific_Blocking(newDevice);
                     }
-                    //Massenspeicher blockieren
+                    // Block the mass storage
                     else if (Settings.Default.BlockNewMassStorage && newDevice.USB_Class == "08")
                     {
                         classSpecific_Blocking(newDevice);
                     }
-                    //HIDGeräte blockieren
+                    // Block HID devices
                     else if (Settings.Default.BlockNewHID && DeviceClass.IsHid(newDevice.USB_Class, newDevice.USB_SubClass, newDevice.USB_Protocol, newDevice.ClassGuid))
                     {
                         classSpecific_Blocking(newDevice);
-                        //Anzahl der Zeigegeräte ermitteln
+                        // Determine the number of pointing devices
                         SysPointingDevicesNow = detect_PointingDevicesNow();
-                        //Anzahl der Tastaturen ermitteln
+                        // Determine the number of keyboards
                         SysKeyboardNow = detect_KeyboardNow();
                     }
-                    //Tastaturen blockieren
+                    // Block keyboards
                     else if (Settings.Default.BlockNewKeyboards && DeviceClass.IsKeyboard(newDevice.USB_Class, newDevice.USB_SubClass, newDevice.USB_Protocol, newDevice.ClassGuid, newDevice.Service))
                     {
                         classSpecific_Blocking(newDevice);
@@ -1389,7 +1379,7 @@ namespace BadUSB_Firewall
                     }
                 }
 
-                //Nur Massenspeicher erlauben. Alle anderen Geräteklassen werden blockiert.
+                // Only allow mass storage. All other device classes are blocked.
                 else if (Settings.Default.AllowOnlyMassStorage)
                 {
                     if (newDevice.USB_Class != "08")
@@ -1399,11 +1389,11 @@ namespace BadUSB_Firewall
 
                 }
 
-                // Ein Gerät, welches noch keiner Liste hinzugefügt wurde.
-                //Standardmäßig wird dieses blockiert
+                // A device that has not yet been added to a list.
+                // This is blocked by default
                 else
                 {
-                    //Ist der sichere Modus aktiviert? Falls ja Gerät sofort blockieren und der Blacklist hinzufügen.
+                    // Is safe mode activated? If yes, block the device immediately and add it to the blacklist.
                     if (Settings.Default.SafeMode)
                     {
 
@@ -1414,7 +1404,7 @@ namespace BadUSB_Firewall
                         {
                             newDevice.DateAdded = DateTime.Now.ToString();
 
-                            //Füge das Gerät der Blacklist hinzu.
+                            // Add the device to the blacklist.
                             var removeResult = Dispatcher.Invoke(() => _devLists.add_DataItem("BlackListDB", newDevice), DispatcherPriority.Normal);
 
                             Dispatcher.Invoke(() => _devLists.removeTempDevice(newDevice));
@@ -1431,28 +1421,29 @@ namespace BadUSB_Firewall
 
                     else
                     {
-                        //Standardmäßige Blockierfunktion für neu erkannte und unbehandelte USB-Geräte
+                        /// Standard blocking function for newly recognized and untreated USB devices
                         if (Settings.Default.BlockUSBDevices)
-                        {   //Füge das Gerät zur Templiste hinzu. Hierdurch wird das Gerät nach der Aktivierung nicht erneut behandelt.
+                        {
+                            // Add the device to the Templiste. This means that the device will not be checked again after activation.
                             TempList.Add(newDevice.Checksum);
 
-                            //Handelt es sich um ein Verbundgerät
+                            // Is it a compound device
                             if (DeviceClass.IsComposite(newDevice.USB_Class, newDevice.USB_SubClass, newDevice.USB_Protocol, newDevice.Service))
                             {
                                 if (newDevice.FirstLocationInformation.Contains("Port"))
                                 {
-                                    //Verbundgerätdeaktivierungsfunktion aufrufen
+                                    // Call the compound deactivation function
                                     result = CdsLib.ChangeDevState(newDevice.HardwareID, newDevice.ClassGuid, newDevice.FirstLocationInformation, true, ChangeDeviceStateParams.DisableComposite);
                                 }
                             }
                             else
                             {
-                                //Kein Verbundgerät. Normale Deaktivierungsfunktion aufrufen.
+                                // No compounding device. Call up the normal deactivation function.
                                 result = disable_Device(newDevice.Name, newDevice.HardwareID, newDevice.ClassGuid, newDevice.DeviceType, newDevice.FirstLocationInformation, newDevice.VendorID, newDevice.ProductID, true, false);
                             }
                         }
 
-                        //Benutzernachfrage bei der Blockierung
+                        // User request during blocking
                         else
                         {
                             var decision = MessageBox.Show("The device " + newDevice.DeviceType + "VendorID: " + newDevice.VendorID + " ProductID: " + newDevice.ProductID + "\nis not included in the Black- or Whitelist.\nBLOCK it now (YES-Button) or decide in the Application (NO-Button) ?", _appTitle + "New device detected", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -1464,15 +1455,15 @@ namespace BadUSB_Firewall
                             }
                         }
 
-                        //Füge das Gerät zu den angezeigten und zu behandelnden Geräten der GUI.
+                        // Add the device to the displayed and to be treated devices of the GUI.
                         Dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() => add_newDevice(newDevice)));
-                        //Benachrichtigung über das neu erkannte Gerät
+                        // Notifies the newly detected device
                         Dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() => show_newDeviceMessage(newDevice, result)));
 
                     }
                 }
 
-                //Starte den automatischen Tastatur und Zeigegerätelogger, sobald es sich um eine Tastatur oder Zeigegerät handelt.
+                // Start the automatic keyboard and pointing device looger application as soon as it is a keyboard or pointing device.
                 if (Settings.Default.Auto_StartKeylogger)
                 {
                     RunKeyLogger(newDevice.ClassGuid, newDevice.USB_Class, newDevice.USB_SubClass, newDevice.USB_Protocol, newDevice.Service);
@@ -1486,7 +1477,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zusätzliche Überprüfungsfunktionen der Whitelist
+        /// Additional check functions of Whitelist
         /// </summary>
         /// <param name="">Param Description</param>
         private void WhiteListFunctions(USBDeviceInfo device)
@@ -1496,9 +1487,9 @@ namespace BadUSB_Firewall
             bool prohibitPort = false;
             string findPort = "";
 
-            //Geräteanschlussinformationen von diesem Gerät aus der Datenbank abfragen.
-            //connectedlocation[0]=Erstmaliger Anschluss, 
-            //connectedlocation[1]=Letzte in Datenbank hinterlegte Anschlussposition
+            // Query device connection information from this device from the database.
+            // connectedlocation [0] = First time connection,
+            // connectedlocation [1] = Last terminal position stored in the database
             string[] connectedLocation = _devLists.get_Port(device, "WhiteListDB");
 
             if (connectedLocation[0] != null && connectedLocation[1] != null && connectedLocation.Length == 2)
@@ -1507,27 +1498,27 @@ namespace BadUSB_Firewall
 
                 if (hwIDParts.Length > 0)
                 {
-                    //Überprüfen ob aktuell noch ein anderes Gerät mit den selben Geräteeigenschaften am System angeschlossen ist.
+                    // Check if another device with the same device properties is currently connected to the system.
                     findPort = CdsLib.get_DevicePort(hwIDParts[0], device.FirstLocationInformation, device.ClassGuid);
 
                     if (!string.IsNullOrEmpty(findPort))
                     {
-                        //Identisches Gerät gefunden
+                        // Identical device found
                         if (findPort != device.FirstLocationInformation && findPort != "")
                         {
                             connectedNow = true;
                         }
                     }
                 }
-                //Wenn Portwechsel verbieten (Nur erstmalige Anschlussposition erlaubt) aktiviert ist.
+                // If port change is prohibited (only first-time connection allowed) is activated.
                 if (Settings.Default.ProhibitPortChange)
                 {
-                    //Aktuelle Anschlussposition weicht von der erstmaligen hinterlegten Anschlussposition ab,
-                    //daher wurde der Anschluss gewechselt und Gerät wird blockiert werden
+                    // Current connection position deviates from the first connected connection position,
+                    // therefore the connection has been changed and the device will be blocked
                     if (connectedLocation[0] != device.FirstLocationInformation)
                     {
                         prohibitPort = true;
-                        //Aufruf der Identischen-Geräte-Funktion
+                        // Call the Identical device function
                         IdenticalDevice(findPort, connectedLocation, device, connectedNow, false, true, prohibitPort, false);
                     }
                 }
@@ -1538,7 +1529,7 @@ namespace BadUSB_Firewall
                     updatePort = true;
                 }
 
-                //Wenn Identische Whitelistgeräte-Blockierung aktiviert ist.
+                // If Identical Whitelist Blocking is enabled.
                 if (Settings.Default.BlockIdenticalWhitelist && !prohibitPort)
                 {
                     //detect if identical device from whitelist is already connected
@@ -1549,15 +1540,15 @@ namespace BadUSB_Firewall
                     }
                 }
 
-                //Wenn ein Geräteanschlusswechsel eines Whitelistgerätes durchgeführt wurde und der Benutzer befragt wird
-                //ob das Gerät blockiert werden soll.
+                // If a device connection change of a whitelist device has been carried out and the user is interrogated
+                // whether the device should be blocked.
                 if (Settings.Default.NotifyWhitelist && !prohibitPort && Settings.Default.ProhibitPortChange == false &&
                     device.FirstLocationInformation != connectedLocation[0])
                 {
                     IdenticalDevice(findPort, connectedLocation, device, connectedNow, updatePort, false, false, true);
                 }
 
-                //Aktualisierung der letzten Anschlussposition des Gerätes in der Datenbank
+                // Update the last connection position of the device in the database
                 if (updatePort && !prohibitPort)
                 {
                     _devLists.UpdatePort(device, "WhiteListDB");
@@ -1566,14 +1557,14 @@ namespace BadUSB_Firewall
 
                 if (Settings.Default.DetectPortChange)
                 {
-                    //Nur benachrichtigen, wenn ein Anschlusswechsel erfolgte oder identisches Gerät vorhanden ist
+                    // Only notify if a connection change has occurred or if the identical device is present
                     TestPort(device, "WhiteListDB", connectedNow, connectedLocation[1]);
                 }
             }
         }
 
         /// <summary>
-        /// Zeige eine Benachrichtigungen Toast an
+        /// View a notifications Toast an
         /// </summary>
         /// <param name="">Param Description</param>
         private void ShowToastMessage(string title, string msg, System.Windows.Forms.ToolTipIcon icon)
@@ -1583,7 +1574,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Benachrichtigungen Toast
+        /// Notifications Toast message
         /// </summary>
         /// <param name="">Param Description</param>
         private void MyToastMessage(object title, object msg, object icon)
@@ -1602,7 +1593,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Retouniert den Anwendungstitel mitsamt der Version
+        /// Reverts the application title along with the version
         /// </summary>
         /// <param name="">Param Description</param>
         public string MyTitle
@@ -1616,7 +1607,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zeige ein Messagebox-Benachrichtigungsfenster in einem eigenen Thread -> keine Blockierung der GUI
+        /// Show a Messagebox notification window in its own thread -> No blocking of the GUI
         /// </summary>
         /// <param name="">Param Description</param>
         private void ShowMessageBox(string text, string title, MessageBoxButton button, MessageBoxImage image)
@@ -1635,7 +1626,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zeigt eine Geräteblockierung und Portwechsel eines Gerätes an.
+        /// Displays device blocking and port switching of a device.
         /// </summary>
         /// <param name="">Param Description</param>
         private void show_newDeviceMessage(USBDeviceInfo item, int result)
@@ -1712,8 +1703,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Fügt ein neues Gerät zu der Liste hinzu, welche zur Gerätebehandlung der zur
-        /// GUI hinzugefügten Geräte benötigt wird.
+        /// Adds a new device to the list, which is used to handle the device
+        /// GUI is required.
         /// </summary>
         /// <param name="">Param Description</param>
         private void add_newDevice(USBDeviceInfo item)
@@ -1724,7 +1715,7 @@ namespace BadUSB_Firewall
             try
             {
 
-                //Erstanschluss des Gerätes
+                // Initial connection of the device
                 if (!DeviceLists.findIn_TemporaryDeviceList(item.Checksum))
                 {
                     item.FirstUsage = "Yes";
@@ -1733,7 +1724,7 @@ namespace BadUSB_Firewall
                 //device was added before
                 else
                 {
-                    item.FirstUsage = "No";//?
+                    item.FirstUsage = "No";
                     _devLists.get_TemporaryDevice(item);
 
                 }
@@ -1827,7 +1818,7 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Starte den Tastatur und Zeigegeräte-Logger
+        /// Start the keyboard and pointing device logger application
         /// </summary>
         /// <param name="">Param Description</param>
         private void RunKeyLogger(string newGuid, string usbClass, string usbSubClass, string usbProtocol, string service)
@@ -1837,7 +1828,7 @@ namespace BadUSB_Firewall
 
             if (runLogger)
             {
-                //Nur eine Instanz zulassen
+                // Allow only one instance
                 if (_isRunning) return;
                 _isRunning = true;
                 Dispatcher.BeginInvoke(new Action(() => BtnKeylogger.IsEnabled = false));
@@ -1846,25 +1837,23 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Aufruf, sobald der Zeigegeräte-Logger beendet wird.
+        /// Call when the pointing device logger is terminated.
         /// </summary>
         /// <param name="">Param Description</param>
         private void bgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            // check error, check cancel, then use result
+            // check an possible error or if a cancel occured
             if (e.Error != null)
             {
-                // handle the error
             }
             else if (e.Cancelled)
             {
-                // handle cancellation
             }
 
         }
 
         /// <summary>
-        /// Liste aller vorhandenen Netzwerkgeräte
+        /// List of all existing network devices
         /// </summary>
         /// <param name="">Param Description</param>
         public ObservableCollection<NetAdapterItem> NetItems
@@ -1880,7 +1869,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Netzwerkgeräte-Initialisierungsliste. Nur Netzwerkadapter die aktiv sind.
+        /// Network Device Initialization List. Only network adapters that are active.
         /// </summary>
         /// <param name="">Param Description</param>
         public List<NetAdapterItem> InitNetworkAdapters
@@ -1912,8 +1901,8 @@ namespace BadUSB_Firewall
         }
 
         ///// <summary>
-        /// Geräteliste, welche für die Anzeige der Baumstruktur der Geräte in der GUI verwendet wird.
-        /// Diese Geräte werden in der unteren Ansicht der GUI (minimale Geräteeigenschaften) angezeigt. 
+        /// Device list, which is used to display the tree structure of the devices in the GUI.
+        /// These devices are displayed in the lower view of the GUI (minimum device properties).
         /// </summary>
         /// <param name="">Param Description</param>
         public ObservableCollection<USBDeviceInfo> USBItems
@@ -1929,7 +1918,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Stellt erkannte Geräte in der GUI dar. Oberes Anzeigefenster
+        /// Displays recognized devices in the GUI. Top display window
         /// </summary>
         /// <param name="">Param Description</param>
         public void fill_DeviceBox(object sender, RoutedEventArgs e)
@@ -1945,7 +1934,7 @@ namespace BadUSB_Firewall
             {
                 if (USBDevices.Count > 0)
                 {
-                    //Reduzierte Darstellungsform Devices aktualisieren
+                    // Reduced display form Update devices
                     Dispatcher.BeginInvoke(new Action(() => _noteWindow.UsbDevices_Now(USBDevices.Count)));
 
                     ConnectedDevice_Box.Text = string.Empty;
@@ -1956,15 +1945,15 @@ namespace BadUSB_Firewall
                         ConnectedDevice_Box.Inlines.Add(new Run(" [" + USBDevices[i].mPosition + "]: ") { FontSize = 12, FontWeight = FontWeights.Bold });
                         var foundItem = false;
 
-                        //Sind Geräteinformationen über ein Gerät dieser Klasse und Typ in den Gerätenklassen vorhanden ?
+                        // Are device information on a device of this class and type present in the device classes?
                         var index = DeviceClass.IndexClass(USBDevices[i].mDevice);
 
-                        //Gehört das Gerät zu einem Gerät der Gefährungsstufe ?
+                        // Does the device belong to a device of the hazard level?
                         if (DeviceClass.ContainsThreatClass(USBDevices[i].mDevice))
                         {
                             containsThreat = true; foundThreat = true;
                         }
-                        //Gehört das Gerät zu einem Gerät der Verdächtigstufe ?
+                        // Is the device a suspect device?
                         else if (USBDevices[i].mInterfaces.Count > 0 || DeviceClass.ContainsSuspectedClass(USBDevices[i].mDevice))
                         {
                             foundSuspect = true; containsSuspect = true;
@@ -2023,7 +2012,7 @@ namespace BadUSB_Firewall
                         }
                         ConnectedDevice_Box.Inlines.Add(seperator + "First usage: ");
 
-                        //Gerät wurde bereits zuvor schon einmal an diesem System bei laufender Software-Firewall angeschlossen
+                        // Device has already been connected to this system while the software firewall is running
                         if (USBDevices[i].mDevice.FirstUsage == "No")
                         {
                             string changed = USBDevices[i].mDevice.FirstLocationInformation != USBDevices[i].mDevice.LastLocationInformation ? "Yes" : "No";
@@ -2032,7 +2021,7 @@ namespace BadUSB_Firewall
                             ConnectedDevice_Box.Inlines.Add(new Run(changed + Environment.NewLine) { FontSize = 12, FontWeight = FontWeights.Bold, Foreground = Brushes.Black });
                         }
 
-                        //Gerät wurde zuvor nicht an diesem System bei laufender Software-Firewall angeschlossen
+                        // Device has not been connected to this system while the software firewall is running
                         else
                         {
                             ConnectedDevice_Box.Inlines.Add(new Run(USBDevices[i].mDevice.FirstUsage + Environment.NewLine) { FontSize = 12, FontWeight = FontWeights.Bold, Foreground = Brushes.Black });
@@ -2077,7 +2066,7 @@ namespace BadUSB_Firewall
                             if (index != -1)
                             {
                                 foundItem = true;
-                                //Schnittstelle des Gerätes
+                                //Interfaces of the device
                                 ConnectedDevice_Box.Inlines.Add(new Run(deviceSep + "-> INTERFACE: " + DeviceClass.ClassCodes[index].Item5 + " (" + USBDevices[i].mInterfaces[j].Service.ToLower() + ")" + System.Environment.NewLine) { FontSize = 12, FontWeight = FontWeights.Bold, Foreground = textColour });
                             }
                             else
@@ -2123,14 +2112,14 @@ namespace BadUSB_Firewall
                         SetImage("red.PNG");
                         _imgName = "red.PNG";
 
-                        //Ändere das angezeigte Symbol der Gefährdungsstufe auf die Stufe Gefährdung
+                        // Change the displayed threat level icon to the Danger level
                         Application.Current.Dispatcher.BeginInvoke(new Action(() => _noteWindow.SetImage(_imgName)));
                     }
                     else if (foundSuspect)
                     {
                         if (!Equals(ConnectedDeviceGroupBox.Background, Brushes.Red))
                         {
-                            //Ändere das angezeigte Symbol der Gefährdungsstufe auf die Stufe Verdächtig
+                            // Change the displayed threat level icon to the Suspicious level
                             ConnectedDeviceGroupBox.Background = Brushes.Yellow;
                             SetImage("yellow.PNG");
                             _imgName = "yellow.PNG";
@@ -2139,7 +2128,7 @@ namespace BadUSB_Firewall
                     }
                     else
                     {
-                        //Ändere das angezeigte Symbol der Gefährdungsstufe auf die Stufe Ungefährlich
+                        // Change the symbol displayed to the threat level to the non-hazardous level
                         ConnectedDeviceGroupBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF92D050");
                         SetImage("green.PNG");
                         _imgName = "green.PNG";
@@ -2165,7 +2154,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Setzt die Grafik für das angezeigte Symbol
+        /// Sets the graphic for the displayed symbol
         /// </summary>
         /// <param name="">Param Description</param>
         private void SetImage(string imagePath)
@@ -2184,7 +2173,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Anzahl der USB-Geräte, welche aktuell zu behandeln sind.
+        /// Number of USB devices to be handled.
         /// </summary>
         /// <param name="">Param Description</param>
         public int UsbElementsInList
@@ -2201,7 +2190,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Anzahl der Netzwerkadapter bei der letzten Programmbeendigung.
+        /// Number of network adapters at the last program termination.
         /// </summary>
         /// <param name="">Param Description</param>
         public int SysNetworkAdapterExit
@@ -2217,7 +2206,7 @@ namespace BadUSB_Firewall
             }
         }
         /// <summary>
-        /// Anzahl der Netzwerkadapter aktuell.
+        /// Number of network adapters currently.
         /// </summary>
         /// <param name="">Param Description</param>
         public int SysNetworkAdapterNow
@@ -2234,7 +2223,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Anzahl der Netzwerkadapter bei Programmstart.
+        /// Number of network adapters at program start.
         /// </summary>
         /// <param name="">Param Description</param>
         public int SysNetworkAdapterStart
@@ -2251,7 +2240,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Anzahl der Tastaturen bei der letzten Programmbeendigung.
+        /// Number of keyboards at the last program termination.
         /// </summary>
         /// <param name="">Param Description</param>
         public int SysKeyboardExit
@@ -2268,7 +2257,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Anzahl der Tastaturen bei Programmstart.
+        /// Number of keyboards at program start.
         /// </summary>
         /// <param name="">Param Description</param>
         public int SysKeyboardStart
@@ -2284,7 +2273,7 @@ namespace BadUSB_Firewall
             }
         }
         /// <summary>
-        /// Anzahl der Tastaturen aktuell.
+        /// Number of keyboards currently.
         /// </summary>
         /// <param name="">Param Description</param>
         public int SysKeyboardNow
@@ -2301,7 +2290,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Anzahl der Zeigegeräte bei der letzten Programmbeendigung.
+        /// Number of pointers on the last program termination.
         /// </summary>
         /// <param name="">Param Description</param>
         public int SysPointingDevicesExit
@@ -2317,7 +2306,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Anzahl der Zeigegeräte bei Programmstart.
+        /// Number of pointing devices at program start.
         /// </summary>
         /// <param name="">Param Description</param>
         public int SysPointingDevicesStart
@@ -2332,7 +2321,7 @@ namespace BadUSB_Firewall
             }
         }
         /// <summary>
-        /// Anzahl der Zeigegeräte aktuell.
+        /// Number of pointing devices current.
         /// </summary>
         /// <param name="">Param Description</param>
         public int SysPointingDevicesNow
@@ -2349,7 +2338,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Rückgabe ob der Benutzer über Administartionsrechte verfügt
+        /// Returns whether the user has administration rights
         /// </summary>
         /// <param name="">Param Description</param>
         private bool IsAdmin
@@ -2365,9 +2354,9 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Blockierungsfunktion für Identische Whitelistgeräte und Anschlussechsel. 
-        /// Öffnet das Fenster welchen den Benutzer mitteilt ob Gerät den Anschluss gewechselt hat oder
-        /// bereits verbunden ist bzw. dieses auch blockieren kann. 
+        /// Blocking function for identical whitelist units and port exchange.
+        /// Opens the window which informs the user whether the device has changed its port-connection or
+        /// is already connected. This device can also be blocked.
         /// </summary>
         /// <param name="">Param Description</param>
         private void IdenticalDevice(string devicePort, string[] whitelistDevicePorts, USBDeviceInfo device, bool connectedNow, bool updatePort, bool blockPortChange, bool prohibitport, bool notifyPortChange)
@@ -2390,13 +2379,13 @@ namespace BadUSB_Firewall
                             int result;
                             if (connected && (devicePort != whitelistDevicePorts[0]) && (device.FirstLocationInformation == whitelistDevicePorts[0]))
                             {
-                                //Neu angeschlossenes Gerät, welches über die Anschlussinformation des als Whitelist gelisteten Gerätes verfügt. Ein zusätzliches Gerät
-                                //mit den selben Eigenschaften ist bereits angeschlossen, daher wird dieses blockiert. 
+                                // Newly connected device, which has the connection information of the device listed as Whitelist. An additional device
+                                // with the same properties is already connected, so this is blocked.
                                 result = disable_Device(device.Name, device.HardwareID, device.ClassGuid, device.DeviceType, devicePort, device.VendorID, device.ProductID, true, true);//new
                             }
                             else
                             {
-                                //Neu angeschlossenes Gerät neben bereits identischen angeschlossenenund Whitelistgerät. Neues Gerät blockieren.
+                                // Newly connected device next to already identical connected and whitelist device. Block new device.
                                 result = disable_Device(device.Name, device.HardwareID, device.ClassGuid, device.DeviceType, device.FirstLocationInformation, device.VendorID, device.ProductID, true, true);//new
                             }
 
@@ -2425,7 +2414,7 @@ namespace BadUSB_Firewall
 
                             notifyWindow.Closed += (sender2, e2) =>
                                 Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
-                            //Zeige das Benachrichtigungsfenster
+                            // Show the notification window
                             notifyWindow.Show();
                             Dispatcher.Run();
                         });
@@ -2443,7 +2432,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erstmaliger Start der Anwendung
+        /// First start of the application
         /// </summary>
         /// <param name="">Param Description</param>
         private void FirstApplicationRun()
@@ -2462,11 +2451,11 @@ namespace BadUSB_Firewall
 
             if (_continueApp)
             {
-                //Erzeugung der Datenbanken
+                // Generation of databases
                 _devLists.CreateDatabase();
                 build_DeviceTables();
 
-                //Initialgeräte in die temporäre Liste kopieren
+                // Copy the initial devices to the temporary list
                 _devLists.copy_DevicesToTemp();
                 _devLists.build_TemporaryDevicesList();
                 Settings.Default.ContinueApplication = true;
@@ -2483,7 +2472,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erkennung ob Anzahl der Netzwerkadapter zwischen Programmende und Start abweicht.
+        /// Detects whether the number of network adapters differs between program end and start.
         /// </summary>
         /// <param name="">Param Description</param>
         private void detect_NetworkAdaptersChanges()
@@ -2495,7 +2484,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erkennung ob Anzahl der Zeigegeräte zwischen Programmende und Start abweicht.
+        /// Detection whether the number of pointers differs between program end and start.
         /// </summary>
         /// <param name="">Param Description</param>
         private void detect_PointingDevicesChanges()
@@ -2508,7 +2497,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erfassung der aktuell am System vorhandenen Zeigegeräte
+        /// Capture the currently available pointing devices on the system
         /// </summary>
         /// <param name="">Param Description</param>
         private int detect_PointingDevicesNow()
@@ -2529,7 +2518,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Benachrichtigung wenn die Anzahl der Tastaturen zwischen Programmende und Start abweicht.
+        /// Notification if the number of keyboards differs between program end and start.
         /// </summary>
         /// <param name="">Param Description</param>
         private void detect_KeyboardChanges()
@@ -2542,7 +2531,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erfassung der aktuell am System vorhandenen Tastaturen
+        /// Capture the currently available keyboards
         /// </summary>
         /// <param name="">Param Description</param>
         private int detect_KeyboardNow()
@@ -2568,7 +2557,7 @@ namespace BadUSB_Firewall
         /// <param name="">Param Description</param>
         private void build_DeviceTables()
         {
-            //Liste der aktuell am System vorhandenen USB-Geräte erfassen.
+            // Capture the list of USB devices present on the system.
             var getDevices = collect_USBDevices();
             if (getDevices.Count > 0)
             {
@@ -2579,7 +2568,7 @@ namespace BadUSB_Firewall
                     if (!string.IsNullOrEmpty(item.Service))
                     {
                         item.DateAdded = DateTime.Now.ToString();
-                        //Geräte zur Initialliste hinzufügen.
+                        // Add devices to the initiallist.
                         var result = _devLists.add_DataItem(querryInitial, item);
 
                         if (result == false)
@@ -2594,7 +2583,7 @@ namespace BadUSB_Firewall
        
 
         /// <summary>
-        /// Öffnet eine Webseite um die VendorID und ProductID überprüfen zu können
+        /// Opens a web page to check the VendorID and ProductID
         /// </summary>
         /// <param name="">Param Description</param>
         private void btnVerifyVendorProductID_click(object sender, RoutedEventArgs e)
@@ -2620,7 +2609,7 @@ namespace BadUSB_Firewall
      
 
         /// <summary>
-        /// Erkennen der Benutzerrechte
+        /// Detecting the user rights
         /// </summary>
         /// <param name="">Param Description</param>
         private void detect_UserRights()
@@ -2641,7 +2630,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erkennen ob 32 oder 64Bit Betriebssystem verwendet wird
+        /// Detect whether 32 or 64-bit operating system is used
         /// </summary>
         /// <param name="">Param Description</param>
         private void detect_OSVersion()
@@ -2659,7 +2648,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zeigt Benachrichtigungen in einer Messagebox
+        /// Shows notifications in a messagebox
         /// </summary>
         /// <param name="">Param Description</param>
         private void ShowMessage(string message, MessageBoxButton button, MessageBoxImage image)
@@ -2671,7 +2660,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Ändert den Anschlusswechselerkennungs Menüeintrag
+        /// Changes the connection change detection menu entry
         /// </summary>
         /// <param name="">Param Description</param>
         private void detect_PortChange_Click(object sender, RoutedEventArgs e)
@@ -2688,10 +2677,8 @@ namespace BadUSB_Firewall
 
         }
 
-
-
         /// <summary>
-        ///  //Tritt auf, wenn sich die IP - Adresse einer Netzwerkschnittstelle ändert.
+        /// // Occurs when the IP address of a network interface changes.
         /// </summary>
         /// <param name = "" > Param Description</param>
         private void Network_ChangedEvent(object sender, EventArgs e)
@@ -2707,7 +2694,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// //Tritt auf, wenn sich die Verfügbarkeit eines Netzwerks ändert.
+        /// // Occurs when the availability of a network changes.
         /// </summary>
         /// <param name="">Param Description</param>
         private void Network_AvailabilityChangedEvent(object sender, NetworkAvailabilityEventArgs e)
@@ -2732,10 +2719,10 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Érzeugung der Netzwerkgerätelisten. 
+        /// Generation of networkdevices-list.
         /// </summary>
-        /// <param name="InitNetworkAdapters">Alle vorhandenen Netzwerkadapter</param>
-        /// <param name="NetItems">Alle physikalisch vorhandenen Netzwerkadapter</param>
+        /// <param name="InitNetworkAdapters">All existing network adapters</param>
+        /// <param name="NetItems">All physically available network adapters</param>
         private void build_NetList()
         {
             NetItems.Clear();
@@ -2797,7 +2784,7 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Zeigt die Tabelle mit den Gerätedifferenzen (erfasst zwischen Programmende und Start) an.
+        /// Displays the table with the device differences (recorded between program end and start).
         /// </summary>
         /// <param name="">Param Description</param>
         private void showTable(string table)
@@ -2809,10 +2796,10 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Vergleicht die erstellten Gerätelisten (OldStateListDB und NewStateListDB) auf Unterschiede.
+        /// Compares the created deviceists (OldStateListDB and NewStateListDB) to differences.
         /// </summary>
-        /// <param name="OldStateListDB">Wird bei Programmende erstellt</param>
-        /// <param name="NewStateListDB">Wird bei Programmstart erstellt</param>
+        /// <param name="OldStateListDB">Created at programs end</param>
+        /// <param name="NewStateListDB">Created at programs start</param>
         private void compare_DeviceState()
         {
             if (Settings.Default.ProtectiveFunction)
@@ -2853,7 +2840,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zeigt eine Liste aller aktuell am System vorhandenen USB-Geräte an
+        /// Displays a list of all currently available USB devices on the system
         /// </summary>
         /// <param name="">Param Description</param>
         private void createActualStateList_Click(object sender, RoutedEventArgs e)
@@ -2884,7 +2871,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erzeugt die NewStateListDB bei Programmstart oder bei Programmende die OldStateListDB
+        /// The NewStateListDB generates the OldStateListDB at program start or at program end
         /// </summary>
         /// <param name="">Param Description</param>
         private void create_DeviceState(string table)
@@ -2915,7 +2902,7 @@ namespace BadUSB_Firewall
                         }
                         foreach (USBDeviceInfo item in getDevices)
                         {
-                            //Nur Geräte hinzugügen die über eine akzeptierte GUID verfügen und nicht in der Black- oder Whitelist vorhanden sind.
+                            // Only add devices that have an accepted GUID and are not available in the Black or Whitelist.
                             if (DeviceClass.AcceptedGuid.Contains(new Guid(item.ClassGuid)) && !string.IsNullOrEmpty(item.USB_Class) && !string.IsNullOrEmpty(item.USB_SubClass) && !string.IsNullOrEmpty(item.USB_Protocol))
                             {
                                 if (item.Status != "Error" && !DeviceLists.findIn_BlackList(item.Checksum) && !DeviceLists.findIn_WhiteList(item.Checksum) && !DeviceLists.findIn_InitialList(item.Checksum))
@@ -2938,8 +2925,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zur Erkennung angeschlossenerer in der Blacklist befindlichen Geräte.
-        /// Wird bei Programmstart und nach der Deaktivierung des SAFE-Modus ausgeführt.
+        /// To detect connected devices in the blacklist.
+        /// Executed at program start and after deactivation of the SAFE mode.
         /// </summary>
         /// <param name="">Param Description</param>
         private void detect_Blocked()
@@ -3045,7 +3032,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Eigene Behandlung bei Programmbeendigung
+        /// Own treatment at program termination
         /// </summary>
         /// <param name="">Param Description</param>
         protected override void OnClosing(CancelEventArgs e)
@@ -3063,7 +3050,7 @@ namespace BadUSB_Firewall
 
             if (Settings.Default.Detect_USBChanges && Settings.Default.StopApplication == false)
             {
-                //Erzeugung der OldStateListDB
+                // Create the OldStateListDB
                 if (Settings.Default.ContinueApplication)
                 {
                     _devLists.addTempDevice_ToTable();
@@ -3088,26 +3075,26 @@ namespace BadUSB_Firewall
 
         #region Database_Functions
         /// <summary>
-        /// Fügt ein neu erkanntes Gerät der Whitelist hinzu
+        /// Adds a newly discovered device to Whitelist
         /// </summary>
         /// <param name="">Param Description</param>
         private void add_DeviceWhitelist(USBDeviceInfo device, string actualTime, bool addWhiteList)
         {
             try
             {
-                //Überprüfen ob bereits vorhanden
+                // Check if it already exists
                 if (DeviceLists.findIn_WhiteList(device.Checksum))
                 {
-                    //Benachrichtigen, dass Gerät bereits vorhanden ist.
+                    // Notify that device already exists.
                     Dispatcher.BeginInvoke(new Action(() => ShowToastMessage("Identical Whitelist device found", device.Name + "\n" + device.DeviceType + "\nVendorID:" + device.VendorID + " ProductID:" + device.ProductID + "\nDate added:" + device.DateAdded + "is already in the Whitelist", System.Windows.Forms.ToolTipIcon.Warning)));
                 }
 
                 else
                 {
                     if (!addWhiteList) return;
-                    //Hinzufügungsdatum zur Liste = actualTime
+                    // add date to the list = actual time
                     device.DateAdded = actualTime;
-                    //Zur Datenbank hinzufügen
+                    // Add to database
                     var res = _devLists.add_DataItem("WhiteListDB", device);
 
                     if (res == false)
@@ -3125,8 +3112,8 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Alle in der GUI angezeigten Geräte zur Whitelist hinzufügen. Wird ausgeführt wenn der Benutzer 
-        /// in der GUI keine Einzelauswahl vor Aufruf der Erlauben-Funktion trifft.
+        /// Add all devices in the GUI to the Whitelist. Is executed when the user
+        /// in the GUI does not make a single selection before calling the allow function.
         /// </summary>
         /// <param name="">Param Description</param>
         private void add_DevicesToWhitelist(string actualTime, bool addWhiteList)
@@ -3135,12 +3122,12 @@ namespace BadUSB_Firewall
             {
                 for (int i = 0; i < USBDevices.Count; i++)
                 {
-                    //Hinzufügen des Hauptgerätes
+                    // Add the main device
                     add_DeviceWhitelist(USBDevices[i].mDevice, actualTime, addWhiteList);
 
                     for (int j = 0; j < USBDevices[i].mInterfaces.Count; j++)
                     {
-                        //Hinzufügen der Schnittstelle
+                        // Add the interface
                         add_DeviceWhitelist(USBDevices[i].mInterfaces[j], actualTime, addWhiteList);
                     }
 
@@ -3153,7 +3140,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Fügt erkannte Geräteabweichungen zwischen Programmende und Start zur Differenzenliste hinzu
+        /// Add detected device deviations between program end and start to the difference list
         /// </summary>
         /// <param name="">Param Description</param>
         private void add_DifferencesToList()
@@ -3169,16 +3156,16 @@ namespace BadUSB_Firewall
                     add_newDevice(item);
                     if (Settings.Default.BlockUSBDevices)
                     {
-                        //Keine Geräe der Whitelist hinzufügen
+                        // Do not add any whitelist
                         if (!DeviceLists.findIn_WhiteList(item.Checksum))
                         {
-                            // Überprüfung ob Gerät aktuell angeschlossen ist
+                            // Check if the device is currently connected
                             result = CdsLib.ChangeDevState(item.HardwareID, item.ClassGuid, item.FirstLocationInformation, true, ChangeDeviceStateParams.Available);
                             if (Settings.Default.BlockUSBDevices)
                             {
                                 if (result == (int)ErrorCode.Success)
                                 {
-                                    //Deaktivierung des Gerätes
+                                    // Disabling the device
                                     result = disable_Device(item.Name, item.HardwareID, item.ClassGuid, item.DeviceType, item.FirstLocationInformation, item.VendorID, item.ProductID, true, false);
 
                                 }
@@ -3195,7 +3182,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Entfernt ein Gerät aus der Blackliste und fügt es zur Whitelist hinzu
+        /// Removes a device from the Blacklist and adds it to Whitelist
         /// </summary>
         /// <param name="">Param Description</param>
         private void BlackToWhiteList(object sender, MyEventArgs e)
@@ -3210,12 +3197,12 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Entfernt ein Gerät aus der Whiteliste und fügt es zur Blacklist hinzu
+        /// Removes a device from the Whiteliste and adds it to the Blacklist
         /// </summary>
         /// <param name="">Param Description</param>
         private void WhiteToBlackList(object sender, MyEventArgs e)
         {
-            //Überprüfung ob Gerät aktuell am hinterlegten Geräteanschluss angeschlossen ist
+            // Check whether the device is currently connected to the connected device connection
             var result = CdsLib.ChangeDevState(e.device.mHardwareID, e.device.mClassGuid, e.device.mLocationInformation,
                 true, ChangeDeviceStateParams.Available);
             if (result == (int)ErrorCode.Success)
@@ -3223,17 +3210,17 @@ namespace BadUSB_Firewall
                 result = disable_Device(e.device.mName, e.device.mHardwareID, e.device.mClassGuid, e.device.mDeviceType,
                     e.device.mLocationInformation, e.device.mVendorID, e.device.mProductID, true, true);
 
-                //Gerät wurde am hinterlegten Anschluss nicht gefunden
+                // Device could not be found on the connected port
                 if (result == (int)ErrorCode.NotFound)
                 {
-                    //Durchsuche Geräteliste erneut und blockiere bei einer Übereinstimmung gefundenes Gerät (auch an anderen Geräteanschluss)
+                    // Recheck the device list again and block a device found on a match (also on another device port)
                     CdsLib.disable_USBDevice(e.device.mHardwareID, e.device.mClassGuid, e.device.mLocationInformation, false);
                 }
             }
         }
 
         /// <summary>
-        /// Fügt ein Gerät zu der Blacklist-Datenbank hinzu
+        /// Adds a device to the Blacklist database
         /// </summary>
         /// <param name="">Param Description</param>
         private void add_DevicesToBlackList(USBDeviceInfo device, string actualTime)
@@ -3246,15 +3233,16 @@ namespace BadUSB_Firewall
                 ShowToastMessage("Device already in the Blacklist", device.DeviceType + "\nVendorID: " + device.VendorID + " ProductID: " + device.ProductID + "\nDate added: " + device.DateAdded + "is already in Blacklist", System.Windows.Forms.ToolTipIcon.Warning);
             }
             if (foundDecision == MessageBoxResult.Yes)
-            {   //Datum der hinzufügung zur Liste
+            {
+                // Date of addition to the list
                 device.DateAdded = actualTime;
-                //Gerät der Datenbank hinzufügen
+                // Add the device to the database
                 var result = _devLists.add_DataItem("BlackListDB", device);
                 if (result == false)
                 {
                     ShowToastMessage("Error adding in Blacklist", "Error in adding " + device.DeviceType + "\nVendorID: " + device.VendorID + " ProductID: " + device.ProductID, System.Windows.Forms.ToolTipIcon.Error);
                 }
-                //Gerät wurde eventuell bisher nicht automatisch deaktiviert, deshalb Benutzer nochmal befragen
+                // Device may not have been disabled automatically, so ask the user again
                 if (Settings.Default.BlockUSBDevices == false)
                 {
                     MessageBoxResult changeState = MessageBoxResult.No;
@@ -3266,18 +3254,18 @@ namespace BadUSB_Firewall
                 }
                 if (changeDeviceState)
                 {
-                    //Gerät blockieren
+                    // Block the device
                     disable_Device(device.Name, device.HardwareID, device.ClassGuid, device.DeviceType, device.FirstLocationInformation, device.VendorID, device.ProductID, true, true);
                 }
 
             }
-            //Gerät aus der temporären Liste entfernen, da es nicht mehr aktiviert wird.
+            // Remove the device from the temporary list because it is no longer activated.
             TempList.Remove(device.Checksum);
         }
         #endregion
         #region GUI_Handling
         /// <summary>
-        /// Schließt das Gerätebeispielfenster
+        /// Closes the device example window
         /// </summary>
         /// <param name="">Param Description</param>
         private void closeExamplesPopup_Click(object sender, RoutedEventArgs e)
@@ -3286,7 +3274,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Füllt das Fenster, welches die Informationen der hinterlegten Gerätebeispiele anzeigt.
+        /// Fills the window, which displays the information of the stored device examples.
         /// </summary>
         /// <param name="">Param Description</param>
         private void fill_USBExamplesBox(object sender, RoutedEventArgs e)
@@ -3317,7 +3305,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Auflistung der erweiterten Geräteinformationen in der GUI
+        /// Lists the extended device information in the GUI
         /// </summary>
         /// <param name="">Param Description</param>
         private void fill_DescriptionBox(object sender, RoutedEventArgs e)
@@ -3447,11 +3435,11 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion zur Behandlung der durch den Benutzer in der GUI getroffenen Entscheidungsauswahl.
-        /// Es wurde entweder Blockieren (zur Blacklist hinzufügen). Allow (Zur Whitelist hinzufügen)
-        /// Oder Keine Entscheidung (zu keiner Liste hinzufügen und Gerät aktivieren) gewählt.
-        /// Wurde eine spezifische Geräteauswahl durchgeführt, so werden nur diese behandelt. Sonst
-        /// alle vorhandenen Geräte.
+        /// Function to handle the decision selection made by the user in the GUI.
+        /// It was either Block (add to Blacklist). Allow (Add to Whitelist)
+        /// Or No decision (do not add to any list and activate device).
+        /// If a specific device selection has been carried out, only these are treated. Otherwise
+        /// all existing devices.
         /// </summary>
         /// <param name="">Param Description</param>
         private void userDecision_Checked(object sender, RoutedEventArgs e)
@@ -3467,15 +3455,15 @@ namespace BadUSB_Firewall
                     {
                         MessageBoxResult decision;
                         var actualTime = "";
-                        //Allow wurde gewählt. Geräte werden zur Whitelist hinzugefügt.
+                        // Allow was elected. Devices are added to Whitelist.
                         if (Equals(button, SelectButton1))
                         {
-                            //Geräteselektion wurde durchgeführt. 
+                            // Device selection has been performed.
                             if (SelectedTreeItems.Count > 0)
                             {
                                 handle_SelectedDevices(true);
                             }
-                            //Alle dargestellten Geräte zur Whitelist.
+                            // All devices shown to Whitelist.
                             else
                             {
                                 decision = Settings.Default.BlockUSBDevices == false ? MessageBoxResult.Yes : MessageBox.Show("Add all devices to the WhiteList?", _appTitle + "Add devices to Whitelist",
@@ -3509,13 +3497,13 @@ namespace BadUSB_Firewall
 
 
                                     actualTime = DateTime.Now.ToString();
-                                    //Füge alle Geräte zur Whitelist hinzu
+                                    // Add all devices to Whitelist
                                     add_DevicesToWhitelist(actualTime, true);
-                                    //Aktiviere alle Geräte
+                                    // Activate all devices
                                     activate_AllDevices();
-                                    //Lösche alle in der GUI dargestellten Geräte.
+                                    // Delete all devices displayed in the GUI
                                     USBDevices.Clear();
-                                    //Aktualisiere Elemente der Reduzierten Darstellungsform
+                                    // Update elements of the Reduced Representation form
                                     Dispatcher.BeginInvoke(new Action(() => _noteWindow.UsbDevices_Now(0)));
                                     UsbElementsInList = 0;
                                     Dispatcher.BeginInvoke(new Action(() => _noteWindow.InterfaceDevices_Now(0)));
@@ -3523,7 +3511,7 @@ namespace BadUSB_Firewall
                                 }
                             }
                         }
-                        //Blockieren wurde gewählt. Alle Geräte zur Blacklist hinzufügen
+                        // Block was selected. Add all devices to the Blacklist
                         else if (Equals(button, SelectButton2))
                         {
                             if (SelectedTreeItems.Count > 0)
@@ -3556,8 +3544,8 @@ namespace BadUSB_Firewall
 
                             }
                         }
-                        //Auswahl 3 (Keine Entscheidung) wurde gewählt. Entferne alle Geräte aus der GUI, aktiviere sie
-                        //und lösche sie aus der temporären Liste.
+                        // Select 3 (No decision) has been selected. Remove all devices from the GUI, activate them
+                        // and delete them from the temporary list.
                         else if (Equals(button, SelectButton3))
                         {
                             if (SelectedTreeItems.Count > 0)
@@ -3655,7 +3643,7 @@ namespace BadUSB_Firewall
                             }
                             else
                             {
-                                //Sollen die Geräte aktiviert werden. Aktuell standardmäßig auf ja eingestellt.
+                                // The devices should be activated. Currently set to Yes by default.
                                 decision = MessageBox.Show("Use all device(s) without\nadding them to the White- or BlackList ?", _appTitle + "Dont include device(s) to Black- or Whitelist",
                                 MessageBoxButton.YesNo, MessageBoxImage.Question);
                                 if (decision == MessageBoxResult.Yes)
@@ -3733,7 +3721,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Einzelgeräteauswahl-Funktion de GUI. Fügt die selektierten Geräte in die White-oder Blacklist.
+        /// Single device selection function de GUI. Adds the selected devices to the White or Blacklist.
         /// </summary>
         /// <param name="">Param Description</param>
         private int handle_SelectedDevices(bool selected_WhiteList)
@@ -3755,9 +3743,9 @@ namespace BadUSB_Firewall
                         {
                             if (!TempList.Contains(elem))
                             {
-                                //Füge die zu behandelnden Geräte zur Temporären Liste hinzu.
-                                //Hierdurch werden die durch die Aktivierung erneut erkannten Geräte nicht 
-                                //erneut durch die Software-Firewall behandelt
+                                // Add the devices to be treated to the temporary list.
+                                // This does not recognize the devices detected by the activation again
+                                // again handled by the software firewall
                                 TempList.Add(elem);
                             }
                         }
@@ -3774,13 +3762,14 @@ namespace BadUSB_Firewall
                         {
                             if (selected_WhiteList)
                             {
-                                //Füge das Hauptgerät zur Whitelist
+                                //Add the main-deviceto the whitelist
                                 add_DeviceWhitelist(USBDevices[i].mDevice, actualTime, selected_WhiteList);
-                                //Aktiviert das Hauptgerät
+                                //Activate the main-device
                                 activate_Device(USBDevices[i].mDevice.Name, USBDevices[i].mDevice.HardwareID, USBDevices[i].mDevice.ClassGuid, USBDevices[i].mDevice.DeviceType, USBDevices[i].mDevice.FirstLocationInformation, USBDevices[i].mDevice.Checksum, true);
                             }
                             else
-                            {   //Füge das Hauptgerät zur Blacklist
+                            {  
+                                //Add the main-device to the blacklist
                                 add_DevicesToBlackList(USBDevices[i].mDevice, actualTime);
                             }
 
@@ -3791,14 +3780,14 @@ namespace BadUSB_Firewall
                                 {
                                     if (selected_WhiteList)
                                     {
-                                        //Füge die Schnittstelle zur Whitelist
+                                        //Add the interface to the whitelist
                                         add_DeviceWhitelist(USBDevices[i].mInterfaces[j - 1], actualTime, selected_WhiteList);
-                                        //Aktiviert die Schnitstelle
+                                        //Activate the interface
                                         activate_Device(USBDevices[i].mInterfaces[j - 1].Name, USBDevices[i].mInterfaces[j - 1].HardwareID, USBDevices[i].mInterfaces[j - 1].ClassGuid, USBDevices[i].mInterfaces[j - 1].DeviceType, USBDevices[i].mInterfaces[j - 1].FirstLocationInformation, USBDevices[i].mInterfaces[j - 1].Checksum, true);
                                     }
                                     else
                                     {
-                                        //Füge die Schnittstelle zur Blacklist
+                                        //Add the interface o the blacklist
                                         add_DevicesToBlackList(USBDevices[i].mInterfaces[j - 1], actualTime);
                                     }
 
@@ -3819,8 +3808,8 @@ namespace BadUSB_Firewall
                                 int cnt = USBDevices[i - 1].mInterfaces.Count;
                                 for (int j = cnt; j > 0; j--)
                                 {
-                                    //Entferne die zur Datenank hinzugefügten Geräte aus der USBDevices und USBItems Liste, welche die 
-                                    //in der GUI dargestellten Geräte beinhalten
+                                    // Remove the devices added to the datank from the USBDevices and USBItems list, which contain the
+                                    // in the GUI
                                     UsbElementsInList--;
                                     Dispatcher.BeginInvoke(new Action(() => _noteWindow.InterfaceDevices_Now(UsbElementsInList)));
                                     USBItems.Remove(USBItems.Single(s => s.Checksum == USBDevices[i - 1].mInterfaces[j - 1].Checksum));
@@ -3845,7 +3834,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Fügt ein in der GUI selektiertes Gerät zu der SelectedTreeItems Liste hinzu.
+        /// Adds a device selected in the GUI to the SelectedTreeItems list.
         /// </summary>
         /// <param name="">Param Description</param>
         public void TreeView_Checked(object sender, RoutedEventArgs e)
@@ -3862,7 +3851,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Entfernt ein zuvor in der GUI selektiertes Gerät aus der SelectedTreeItems. 
+        /// Removes a device selected in the GUI from the SelectedTreeItems.
         /// </summary>
         /// <param name="">Param Description</param>
         public void TreeView_UnChecked(object sender, RoutedEventArgs e)
@@ -3891,7 +3880,7 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Erstellt eine Liste aller am System vorhandenen USB Plug-and-Play Geräte und retourniert diese.
+        /// Creates and returns a list of all USB plug-and-play devices present on the system.
         /// </summary>
         /// <param name="">Param Description</param>
         static List<USBDeviceInfo> collect_USBDevices()
@@ -3953,7 +3942,7 @@ namespace BadUSB_Firewall
         #region Menuentrys
         #region Menuentry_Protection
         /// <summary>
-        /// Menüeintrag SAFE-Mode wurde gewählt
+        /// Menu item SAFE-Mode has been selected
         /// </summary>
         /// <param name="">Param Description</param>
         private void safeMode_Click(object sender, RoutedEventArgs e)
@@ -3987,7 +3976,7 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Menüeintrag nur Massenspeicher zulassen wurde gewählt.
+        /// Allow entry of mass storage only was selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void onlyMassStorage_Click(object sender, RoutedEventArgs e)
@@ -4021,7 +4010,7 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Menüeintrag Massenspeicher blockieren wurde gewählt.
+        /// Block Mass storage menu entry was selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void block_NewMassStorage_Click(object sender, RoutedEventArgs e)
@@ -4056,7 +4045,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Menüeintrag zur Blockierung von HID-Geräten wurde gewählt.
+        //// Menu entry for blocking HID devices was selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void block_NewHID_Click(object sender, RoutedEventArgs e)
@@ -4086,7 +4075,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Menüeintrag zum Blockieren von Netzwerkadapter wurde gewählt.
+        /// Menu entry for blocking network adapter was selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void block_NewNetwork_Click(object sender, RoutedEventArgs e)
@@ -4116,7 +4105,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Menüeintrag zum Blockieren von Tastaturen wurde gewählt.
+        /// Menu entry for blocking keyboards has been selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void block_NewKeyboard_Click(object sender, RoutedEventArgs e)
@@ -4149,7 +4138,7 @@ namespace BadUSB_Firewall
 
         #endregion
         /// <summary>
-        /// Menüfunktion zum Löschen der White- und Blacklist
+        /// Menu function to delete the white and blacklist
         /// </summary>
         /// <param name="">Param Description</param>
         private void deleteTables_Click(object sender, RoutedEventArgs e)
@@ -4170,8 +4159,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Neuerstellung der Initialisierungsliste. Alle aktuell angeschlossenen
-        /// Geräte werden dieser hinzugefügt und als unbedrohlich eingestuft.
+        /// Restore the initialization list. All currently connected
+        /// devices are added to it and classified as irrelevant.
         /// </summary>
         /// <param name="">Param Description</param>
         private void rebuildInitialTable_Click(object sender, RoutedEventArgs e)
@@ -4191,9 +4180,9 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zeigt eine über sender angegebene Datenbank an
+        /// Displays a parent named database
         /// </summary>
-        /// <param name="myItem.CommandParameter">Liste welche angezeigt werden soll</param>
+        /// <param name="myItem.CommandParameter">List which is to be displayed</param>
         private void showList_Click(object sender, RoutedEventArgs e)
         {
             MenuItem myItem = (MenuItem)sender;
@@ -4206,9 +4195,9 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Löscht den Inhalt einer Datenbank
+        /// Deletes the contents of a database
         /// </summary>
-        /// <param name="myItem.CommandParameter">Liste welche gelöscht werden soll</param>
+        /// <param name="myItem.CommandParameter">List which you want to delete</param>
         private void deleteList_Click(object sender, RoutedEventArgs e)
         {
             DeviceLists devLists = new DeviceLists();
@@ -4225,7 +4214,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Menüeintrag zur Aktivierung der USB-Geräteblockierung bei unbehandelten Geräten
+        /// Menu item for activating USB device blocking for untreated devices
         /// </summary>
         /// <param name="">Param Description</param>
         private void block_NewDevices(object sender, RoutedEventArgs e)
@@ -4245,7 +4234,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Rücksetzen aller Listen und Einstellung. Bei erneutem Start wird dies erneut als erster Start angezeigt.
+        /// Reset all lists and setting. When this is started again, this is displayed again as the first start.
         /// </summary>
         /// <param name="">Param Description</param>
         private void resetSettings_Click(object sender, RoutedEventArgs e)
@@ -4283,7 +4272,7 @@ namespace BadUSB_Firewall
                 Settings.Default.AppExitPointingDevices = 0;
                 Settings.Default.AppExitNetworkAdapters = 0;
                 Settings.Default.SafeMode = false;
-                Settings.Default.Auto_StartKeylogger = false;// true;
+                Settings.Default.Auto_StartKeylogger = false;
                 Settings.Default.StopApplication = true;
                 Settings.Default.ContinueApplication = false;
                 Settings.Default.NotifyWhitelist = true;
@@ -4303,7 +4292,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zeigt das Administrative Fenster zur Geräteregelverwaltung an.
+        /// Displays the administrative window for device management.
         /// </summary>
         /// <param name="">Param Description</param>
         private void configureRules_Click(object sender, RoutedEventArgs e)
@@ -4312,7 +4301,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Öffnet das Administrationsfenster zur Geräteregelnverwaltung
+        /// Opens the administration window for device management
         /// </summary>
         /// <param name="">Param Description</param>
         private void Open_FirewallRules(object sender, EventArgs e)
@@ -4324,7 +4313,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Zeige einige Hinweis-Tips
+        /// Show some tips
         /// </summary>
         /// <param name="">Param Description</param>
         private void btnShowHint_Click(object sender, RoutedEventArgs e)
@@ -4336,7 +4325,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Deaktivierung der Schutzfunktion der Software-Firewall
+        /// Disable the protection of the software firewall
         /// </summary>
         /// <param name="">Param Description</param>
         private void disable_ProtectiveFunction_Click(object sender, RoutedEventArgs e)
@@ -4385,8 +4374,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Menüeintrag welcher die Überwachungsfunktion für die Erfassung der Gerätedifferenzen
-        /// zwischen Programmende und Start aktiviert.
+        /// Menu entry which is the monitoring function for the detection of the device differences
+        /// between program end and start.
         /// </summary>
         /// <param name="">Param Description</param>
         private void detect_USBChanges_Click(object sender, RoutedEventArgs e)
@@ -4403,8 +4392,9 @@ namespace BadUSB_Firewall
             }
             Settings.Default.Save();
         }
+
         /// <summary>
-        /// Menüeintrag zur Aktivierung des automatischen Tastatur- und Zeigegerätes-Logger
+        /// Menu item for activating the automatic keyboard and pointing device logger
         /// </summary>
         /// <param name="">Param Description</param>
         private void auto_StartKeylogger_Click(object sender, RoutedEventArgs e)
@@ -4421,10 +4411,6 @@ namespace BadUSB_Firewall
             Settings.Default.Save();
         }
 
-
-
-
-
         /// <summary>
         /// Description
         /// </summary>
@@ -4436,7 +4422,7 @@ namespace BadUSB_Firewall
         #region Menu_Applications
         #region Keylogger
         /// <summary>
-        /// Startet den Tastatur- und Mauslogger.
+        /// /// Starts the keyboard and mouse logger.
         /// </summary>
         /// <param name="">Param Description</param>
         private void RunKeylogger()
@@ -4456,8 +4442,9 @@ namespace BadUSB_Firewall
                 MessageBox.Show("BadUSB_Logger.exe was not found in the Resource directory!", _appTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         /// <summary>
-        /// Menüeintrag Keylogger wurde gewählt.
+        /// Menu item Keylogger has been selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void btnKeylogger_Click(object sender, RoutedEventArgs e)
@@ -4468,11 +4455,10 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Wird aufgerufen wenn der Keylogger beendet wurde, da nur eine geöffnete Instanz
-        /// zugelassen wird.
+        /// Invoked when the keylogger has finished, because only one open instance
+        /// is allowed.
         /// </summary>
         /// <param name="">Param Description</param>
-        //Listen to exiting of the keylogger console application
         private void OnKeyloggerExited(object sender, EventArgs e)
         {
             Dispatcher.BeginInvoke(new Action(() => BtnKeylogger.IsEnabled = true));
@@ -4483,7 +4469,7 @@ namespace BadUSB_Firewall
         #region Device_Manager
 
         /// <summary>
-        /// Menüeintrag zum Öffnen des Gerätemanagers wurde gewählt.
+        /// Menu entry for opening the device manager was selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void btnOpenDeviceManager_Click(object sender, RoutedEventArgs e)
@@ -4499,7 +4485,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Geräemanager wurde geschlossen
+        /// Device manager has been closed
         /// </summary>
         /// <param name="">Param Description</param>
         private void OnDeviceManagerExited(object sender, EventArgs e)
@@ -4509,7 +4495,7 @@ namespace BadUSB_Firewall
         #endregion
         #region Windows_Explorer
         /// <summary>
-        /// Menüeintrag zum Öffnen eines Windows-Explorer Fenster wurde gewählt
+        /// Menu entry for opening a Windows Explorer window was selected
         /// </summary>
         /// <param name="">Param Description</param>
         private void btnOpenWindowsExplorer_Click(object sender, RoutedEventArgs e)
@@ -4525,7 +4511,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Windows-Explorer Fenster wurde geschlossen.
+        /// Windows Explorer window has been closed.
         /// </summary>
         /// <param name="">Param Description</param>
         private void OnWindowsExplorerExited(object sender, EventArgs e)
@@ -4537,7 +4523,7 @@ namespace BadUSB_Firewall
         #endregion
         #region Whitelist_Functions
         /// <summary>
-        /// Menüeintrag zum verbieten eines Whitelist-Geräteanschlusswechsel wurde gewählt.
+        /// menu item for prohibiting a Whitelist device connection change was selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void prohibit_PortChange_Click(object sender, RoutedEventArgs e)
@@ -4555,7 +4541,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Menüeintrag zur Blockierung identischer Whitelistgeräte
+        //// Menu entry for blocking identical whitelist devices
         /// </summary>
         /// <param name="">Param Description</param>
         private void block_IdenticalWhitelist_Click(object sender, RoutedEventArgs e)
@@ -4572,7 +4558,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Menüentrag zur Benachrichtigung und Blockiermöglichkeit bei Anschluss eines Whitelist-Gerätes an einen anderen USB-Anschluss
+        /// Menu item for notification and blocking when connecting a Whitelist device to another USB port
         /// </summary>
         /// <param name="">Param Description</param>
         private void notify_Whitelist_Click(object sender, RoutedEventArgs e)
@@ -4590,7 +4576,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Benachrichtet über einen Whitelist-Geräteanschlusswechsel oder ein bereits vorhandenes identisches Gerät
+        /// Notified by a Whitelist device connection change or an existing identical device
         /// </summary>
         /// <param name="">Param Description</param>
         private void TestPort(USBDeviceInfo device, string devTable, bool connectedNow, string connectedLocation)
@@ -4636,8 +4622,8 @@ namespace BadUSB_Firewall
         #endregion
 
         /// <summary>
-        /// Öffnet ein Fenster mit einer detaillierten Netzwerkadapter-Geräteinformation. Diese wird in der GUI
-        /// bei den angezeigten Netzwerkgeräten durch Auswahl eines Netzwerkadapters geöffnet. 
+        /// Opens a window with detailed network adapter device information. This is done in the GUI
+        /// in the displayed network devices by selecting a network adapter.
         /// </summary>
         /// <param name="">Param Description</param>
         private void btnShowSelectedNetworkItem_Click(object sender, SelectionChangedEventArgs e)
@@ -4676,7 +4662,7 @@ namespace BadUSB_Firewall
 
         #region Device_Detection_and_Handling
         /// <summary>
-        /// Registriert ein HANDLE zum Empfang von WM_DEVICECHANGE Benachrichtigungen.
+        /// Register a HANDLE to receive WM_DEVICECHANGE notifications.
         /// </summary>
         /// <param name="windowHandle">Handle to the window receiving notifications.</param>
         private static void Register_DeviceNotification(IntPtr windowHandle)
@@ -4690,26 +4676,26 @@ namespace BadUSB_Firewall
 
             dbi.dbcc_size = Marshal.SizeOf(dbi);
 
-            //Für USB und HID Geräte registrieren. Diese beinhalten die für dieses Software-Firewall benötigten Geräteklassen.
+            // Register for USB and HID devices. These include the device classes required for this software firewall.
             foreach (Guid t in GuidDeviceList)
             {
                 dbi.dbcc_classguid = t;
-                //Speicher allokieren
+                //Allocate memory
                 IntPtr buffer = Marshal.AllocHGlobal(dbi.dbcc_size);
                 Marshal.StructureToPtr(dbi, buffer, true);
-                //Registrierung durchführen
+                //Carry out registration
                 notificationHandle = RegisterDeviceNotification(windowHandle, buffer, 0);
-                //Alokierten Speicher wieder freigeben
+                // Free allocated memory
                 Marshal.FreeHGlobal(buffer);
                 if (notificationHandle == IntPtr.Zero)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Error in register for the device notifications.");
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Error in registering of the device notification handle.");
                 }
             }
         }
 
         /// <summary>
-        /// Wiederrufen der Benachrichtigungsregistrierung auf WM_DEVICHANGE.
+        /// Undo the notification registration on WM_DEVICECHANGE.
         /// </summary>
         private static void Unregister_DeviceNotification()
         {
@@ -4751,25 +4737,25 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Nach der Erkennung eines Gerätes wird diese und die nachfolgenden Funktionen als eigener Thread abgearbeitet.
-		/// Handelt es sich um ein Verbundgerät, so werden die Geräte der zusätzlichen Schnittstellen abgefragt.
-		/// Für das Hauptgerät und eventuellen Schnittstellen wird jeweils die "device_Connected"-Funktion aufgerufen.
+        /// After recognizing a device, this and the subsequent functions are executed as a separate thread.
+        /// In the case of a compound device, the devices of the additional interfaces are interrogated.
+        /// The "device_Connected" function is called for the main device and any interfaces.
         /// </summary>
         /// <param name="">Param Description</param>
         private void bgWorker_DoWork(USBDeviceInfo usbDevice)
         {
             Guid devGuid = new Guid(usbDevice.ClassGuid);
-            //Wenn die Schutzfunktion der Software-Firewall aktiviert ist
+            // If the protection function of the software firewall is activated
             if (Settings.Default.ProtectiveFunction)
             {
 
                 if (usbDevice.FirstLocationInformation.ToUpper().Contains("PORT"))
                 {
-                    //Handelt es sich um ein Verbundgerät?
+                    // Is it a compound device?
                     if (DeviceClass.IsComposite(usbDevice.USB_Class, usbDevice.USB_SubClass, usbDevice.USB_Protocol, usbDevice.Service))
                     {
                         List<USBDeviceInfo> childDevices = new List<USBDeviceInfo>();
-                        //Zusätzliche Geräteschnittstellen einholen.
+                        // Obtain additional device interfaces.
                         _cnt = CdsLib.FindChild(childDevices, usbDevice.DeviceID, usbDevice.HardwareID, usbDevice.DateConnected);
 
                         if (_cnt > 0)
@@ -4779,10 +4765,10 @@ namespace BadUSB_Firewall
                             {
                                 data += childDevices[i].ClassGuid;
                             }
-                            //Erzeuge neue Prüfsumme
+                            // Create a new checksum
                             usbDevice.generate_HashCodeParentDevice(data);
 
-                            //Rufe die device_Connected Funktion für Hauptgerät und Schnittstellen auf
+                            // Call the device_Connected function for the main unit and interfaces
                             device_Connected(usbDevice, devGuid);
                             foreach (var elem in childDevices)
                             {
@@ -4793,28 +4779,28 @@ namespace BadUSB_Firewall
                     }
                     else
                     {
-                        //Kein Verbundgerät -> nur eine Schnittstelle.
+                        // No compound device -> only one interface.
                         device_Connected(usbDevice, devGuid);
                     }
                 }
-                //Wurde die Spezifische Geräteklassenblockierung aktiviert?
-                //Hierbei kann ein verbundenes Gerät dann auch über eine Anschlussposition
-                //verfügen, welche keinen "Port"-Bezeichner in der Anschlussposition hat. 
+                // Is the specific device class blocking activated?
+                // In this case, a connected device can also be connected via a connection position
+                // which has no "port" identifier in the port position.
                 else if (device_ClassBlocking())
                 {
                     device_Connected(usbDevice, devGuid);
                 }
             }
-            //Auch bei deaktiviertem Schutz werden die angeschlossenen USB-Geräte erfasst
+            // Even if the protection is deactivated, the connected USB devices are recorded
             else
             {
-                //Erstmaliger Anschluss
+                // First time connection
                 if (!DeviceLists.findIn_TemporaryDeviceList(usbDevice.Checksum))
                 {
                     usbDevice.FirstUsage = "Yes";
                     _devLists.add_TempDevice(usbDevice);
                 }
-                //Gerät wurde bereits zuvor einmal angeschlossen. Aktualisiere die Anschlussinformation
+                // Device has already been connected once. Update the connection information
                 else
                 {
                     _devLists.get_TemporaryDevice(usbDevice);
@@ -4823,12 +4809,12 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion, die Nachrichten verarbeitet, die an ein Fenster gesendet werden. Der WNDPROC-Typ definiert einen Zeiger auf diese Callback-Funktion.
-        /// Behandelt werden hierbei nur WM_DEVICECHANGE Benachrichtigungen.
+        /// Function that processes messages sent to a window. The WNDPROC type defines a pointer to this callback function.
+        /// Only WM_DEVICECHANGE notifications are handled.
         /// </summary>
-        /// <param name="DEV_BROADCAST_DEVICEINTERFACE">Enthält Informationen über eine Klasse von Geräten.</param>
-        /// <param name="DBT_DEVICEARRIVAL">DBT_DEVICEARRIVAL Ereignis wird gesendet, wenn ein Gerät oder ein Medium eingelegt und verfügbar ist.</param>
-        /// <param name="WM_DEVICECHANGE">                //Benachrichtigung über eine Änderung an der Hardwarekonfiguration eines Gerätes oder des Computers.</param>
+        /// <param name="DEV_BROADCAST_DEVICEINTERFACE">Contains information about a class of devices.</param>
+        /// <param name="DBT_DEVICEARRIVAL">DBT_DEVICEARRIVAL Event is sent when a device or media is inserted and available.</param>
+        /// <param name="WM_DEVICECHANGE">Notification of a change to the hardware configuration of a device or the computer.</param>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             try
@@ -4846,18 +4832,18 @@ namespace BadUSB_Firewall
                         {
                             bool found = false;
                             USBDeviceInfo usbDevice = new USBDeviceInfo();
-                            //Geräteinformationen einholen
-                            found = CdsLib.getDeviceDescription(devInterface, usbDevice/*, false*/);
+                            // Get device information
+                            found = CdsLib.getDeviceDescription(devInterface, usbDevice);
                             if (found && !string.IsNullOrEmpty(usbDevice.HardwareID))
                             {
-                                //Weitere Bearbeitung in seperaten Thread abarbeiten um keine GUI-Blockierung herbeizuführen
+                                // Execute further processing in a separate thread in order to avoid a GUI blocking
                                 BackgroundWorker bgWorker = new BackgroundWorker();
                                 bgWorker.DoWork += (obj, e) => bgWorker_DoWork(usbDevice);
                                 bgWorker.RunWorkerCompleted += bgWorker_RunWorkerCompleted;
                                 bgWorker.RunWorkerAsync();
                             }
                         }
-                        //DBT_DEVICEREMOVECOMPLETE-Ereignise werden gesendet, wenn ein Gerät oder Medium physisch entfernt wurde.
+                        // DBT_DEVICEREMOVECOMPLETE events are sent when a device or medium is physically removed.
                         else if (wmType == DBT_DEVICEREMOVECOMPLETE)
                         {
                             if (devInterface.dbcc_classguid == Guid_HID)
@@ -4878,8 +4864,7 @@ namespace BadUSB_Firewall
         #endregion
         #region Device_AmountChangeDetection
         /// <summary>
-        /// Erkennt ob sich bei einem HID-Geräteanschluss die Anzahl der
-        /// Tastaturen, Zeigegeräte oder Netzwerkadapter geändert hat.
+        /// Determines whether the number of devices (keyboards, pointing devices, or network adapters) when connecting a device has changed
         /// </summary>
         /// <param name="">Param Description</param>
         private void device_Connected(USBDeviceInfo newDevice, Guid devGuid)
@@ -4899,9 +4884,8 @@ namespace BadUSB_Firewall
 
             else if (devGuid == GUID_DEVCLASS_NETWORK)
             {
-                //Keine Netzwerkadapter mit Microsoft als Hersteller, da 
-                //diese im Gerätemanager als virtuell und daher nicht unter dern
-                //Netzwerkadaptern angeführt werden
+                // No network adapter with Microsoft as manufacturer.
+                // These are listed as virtual in the device manager and therefore not added to the network adapters
                 if (!newDevice.Manufacturer.ToUpper().Contains("MICROSOFT"))
                 {
                     networkChanged = true;
@@ -4916,26 +4900,26 @@ namespace BadUSB_Firewall
                 }
             }
 
-            // Gerät wurde in der GUI durch den Benutzer mittels "No decision" behandelt. 
-            //Daher keine weitere Aktion ausführen und diesen Geräteeintrag aus der HandleNextTime 
-            //Liste entfernen. Hierdurch wird das Gerät bei einem erneuten Geräteanschluss wieder erkannt
-            //und muss erneut behandelt werden. Nur Geräte beachten, für die ein Treiber (Service) geladen wird.
+            // Device has been treated in the GUI by the user using "No decision".
+            // Therefore, do not perform any further action and remove this device entry from the HandleNextTime
+            // Remove list. This means that the device is recognized again when the device is connected again
+            // and must be treated again. Only observe devices for which a driver (service) is loaded.
             if (!string.IsNullOrEmpty(newDevice.Service))
             {
                 if (HandleNextTime.Contains(newDevice.Checksum))
                 {
-                    //Gerät ist aktiv
+                    //Device is active
                     if (newDevice.Status == "0" || newDevice.Status == "OK")
                     {
                         HandleNextTime.Remove(newDevice.Checksum);
                     }
                 }
-                //Gerät wurde bisher nicht durch den Benutzer in der GUI behandelt
+                // device has not yet been handled by the user in the GUI
                 else if (!TempList.Contains(newDevice.Checksum))
                 {
                     handle_NewDevice(newDevice);
                 }
-                //Gerät wurde zuvor durch den Benutzer zu der Whitelist hinzugefügt und aktiviert.
+                // Device has been previously added and activated by the user to the Whitelist.
                 else
                 {
                     if (TempList.Contains(newDevice.Checksum))
@@ -4943,7 +4927,7 @@ namespace BadUSB_Firewall
                         if (newDevice.Status == "0" || newDevice.Status == "OK")
                         {
                             TempList.Remove(newDevice.Checksum);
-                            //Gerät überprufen
+                            // Check the device
                             handle_NewDevice(newDevice);
                         }
                     }
@@ -4975,7 +4959,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion für die Benachrichtigung bei Änderung der Tastaturanzahl
+        /// Function for notification when changing the number of keys
         /// </summary>
         /// <param name="">Param Description</param>
         private void keyboard_Changed(bool checkCount, int countBefore)
@@ -4997,7 +4981,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion für die Benachrichtigung bei Änderung der Zeiegeräteanzahl
+        /// Function for notification when changing the number of ponting devices
         /// </summary>
         /// <param name="">Param Description</param>
         private void pointing_Changed(bool checkCount, int countBefore)
@@ -5019,7 +5003,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Funktion für die Benachrichtigung bei Änderung der Netzwerkadapter
+        /// Function for notification when changing network adapters
         /// </summary>
         /// <param name="">Param Description</param>
         private void network_Changed()
@@ -5030,9 +5014,9 @@ namespace BadUSB_Firewall
         #endregion
 
         /// <summary>
-        /// Um Änderungen am Systemmenu dauerhaft einzurichten wird die Methode OnSourceInitialized(EventArgs e) überschrieben. 
-        /// Aufruf dieser Methode erfolgt nach dem Konstruktor, aber sie wird noch ausgeführt bevor das Fenster der Anwendung dargestellt wird.
-        /// Methode zur Registrierung einer Geräteereignis-Benachrichtigung.
+        /// The OnSourceInitialized (EventArgs e) method is overwritten to permanently set changes to the system menu.
+        /// This method is called after the constructor, but it is still executed before the window of the application is displayed.
+        /// Method for registering a device event notification.
         /// </summary>
         /// <param name="">Param Description</param>
         protected override void OnSourceInitialized(EventArgs e)
