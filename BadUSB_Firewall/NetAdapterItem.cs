@@ -1,10 +1,10 @@
-﻿/**
+/**
 ******************************************************************************
 * @file	   NetAdapterItem.cs
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Klasse, welche ein Netzwerkadapter-Gerät darstellt.
+* @brief   Class which is a network adapter device.
 ******************************************************************************
 */
 using System.Management;
@@ -19,7 +19,7 @@ namespace BadUSB_Firewall
     /// <param name="">Param Description</param>
     public class NetAdapterItem
     {
-        //Die unterschiedlichen Verbindungsarten eines Netzwerkadapters zu einem Metzwerk
+        //The different connection types of a network adapter to a network
         private readonly Dictionary<string, string> _netConList = new Dictionary<string, string>
             {
                 {"0","Disconnected" },
@@ -38,7 +38,7 @@ namespace BadUSB_Firewall
             };
 
         /// <summary>
-        /// Netzwerk-Verbindungsstatus zu einem Gerät abfragen
+        /// Check network connection status to a device
         /// </summary>
         /// <param name="">Param Description</param>
         private string GetNetConStatus(string value)
@@ -116,7 +116,6 @@ namespace BadUSB_Firewall
         public string AdapterPnpDeviceId { get; set; }
         public string AdapterProductName { get; set; }
         public string AdapterServiceName { get; set; }
-        //public string Adapter_Status { get; set; }
         public string AdapterTimeOfLastReset { get; set; }
         public string AdapterType { get; set; }
         public string AdapterChecksum { get; set; }
