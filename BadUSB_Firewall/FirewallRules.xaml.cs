@@ -1,10 +1,10 @@
-﻿/**
+/**
 ******************************************************************************
 * @file	   FirewallRules.xaml.cs
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Administrative Geräteregelverwaltung über eigenes Fenster
+* @brief   Administrative device management via own window
 ******************************************************************************
 */
 using System.Collections.ObjectModel;
@@ -47,7 +47,7 @@ namespace BadUSB_Firewall
         {
             if (_myDeviceList != null)
             {
-                //Vorhandene Geräteliste einholen
+                //Obtain an existing equipment list
                 MyDeviceList = MyDeviceClass.GetDeviceList();
                 InitializeComponent();
                 DataContext = this;
@@ -92,7 +92,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// "Apply changes" Knopf wurde gedrückt
+        /// "Apply changes" button was presssed
         /// </summary>
         /// <param name="">Param Description</param>
         public void ApplyButton_Click(object sender, RoutedEventArgs e)
@@ -102,7 +102,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Schließen wurde gedrückt. Geänderte Werte zurücksetzen.
+        /// Close was pressed. Reset the values.
         /// </summary>
         /// <param name="">Param Description</param>
         public void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -137,7 +137,7 @@ namespace BadUSB_Firewall
 
         #region CheckBox_Selections
         /// <summary>
-        /// Checkbox zum Blockieren (in die Blacklist hinzufügen) wurde gewählt.
+        /// Checkbox for blocking (to add to the Blacklist) was selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void BlockBox_Click(object sender, RoutedEventArgs e)
@@ -172,7 +172,7 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Checkbox zum Blockieren (in die Blacklist hinzufügen) wurde abgewählt.
+        /// Checkbox for blocking (to add to the Blacklist) was deselected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void BlockBoxUncheck_Click(object sender, RoutedEventArgs e)
@@ -228,7 +228,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Checkbox zum Erlauben (in die Whitelist hinzufügen) wurde gewählt.
+        /// Checkbox to allow (to add to Whitelist) was selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void AllowBox_Click(object sender, RoutedEventArgs e)
@@ -262,7 +262,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Checkbox zum Erlauben (in die Whitelist hinzufügen) wurde abgewählt.
+        /// Checkbox to allow (add to Whitelist) was deselected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void AllowBoxUncheck_Click(object sender, RoutedEventArgs e)
@@ -317,7 +317,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Checkbox zum Entfernen wurde gewählt.
+        /// Checkbox for removal was selected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void RemoveBox_Click(object sender, RoutedEventArgs e)
@@ -348,7 +348,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Checkbox zum Entfernen wurde abgewählt.
+        /// Checkbox for removal was deselected.
         /// </summary>
         /// <param name="">Param Description</param>
         private void RemoveBoxUncheck_Click(object sender, RoutedEventArgs e)
