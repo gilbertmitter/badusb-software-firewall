@@ -1,10 +1,10 @@
-﻿/**
+/**
 ************************************************************************************************
 * @file	   DeviceLists.xaml.cs
 * @author  Mitter Gilbert
 * @version V1.0.0
 * @date    26.04.2017
-* @brief   Funktionen, welche für die Datenbanken zur Darstellung und Verwaltung genutzt werden
+* @brief   Functions, which are used for the databases for display and administration
 ************************************************************************************************
 */
 using System;
@@ -19,7 +19,7 @@ using System.Linq;
 
 namespace BadUSB_Firewall
 {
-    //Verwendete Geräteklasse für die Administrative Geräteregelverwaltung (FirewallRules.xaml FirewallRules.xaml.cs)
+    //Device class used for administrative device management (FirewallRules.xaml FirewallRules.xaml.cs)
     public class RemoveRuleDevice
     {
         public RemoveRuleDevice(string checksum, string dateAdded, string vendorID, string productID, string hardwareID, string removeTable)
@@ -64,11 +64,11 @@ namespace BadUSB_Firewall
     }
 
     /// <summary>
-    /// Interaktionslogik für DeviceLists.xaml
+    /// Interaction logic for DeviceLists.xaml
     /// </summary>
     public partial class DeviceLists
     {
-        //Temporäre Listen für eine bessere Performance
+        //Temporary lists for better performance
         private static List<string> BlackList = new List<string>();
         private static List<string> WhiteList = new List<string>();
         private static List<string> InitialList = new List<string>();
@@ -89,7 +89,7 @@ namespace BadUSB_Firewall
         private readonly string createNewTable = "CREATE TABLE IF NOT EXISTS temp (ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT ,Added__to__list VARCHAR DEFAULT (null) ,First__connection VARCHAR DEFAULT (null),Name VARCHAR DEFAULT(null),DeviceType VARCHAR DEFAULT(null),USB_Class VARCHAR DEFAULT (null) ,USB_SubClass VARCHAR DEFAULT (null) ,USB_Protocol VARCHAR DEFAULT (null) ,VendorID VARCHAR DEFAULT (null) ,Vendor_Name VARCHAR DEFAULT (null) ,ProductID VARCHAR DEFAULT (null) ,ProductName VARCHAR DEFAULT (null) ,DeviceID VARCHAR DEFAULT (null) ,ClassGUID VARCHAR DEFAULT (null) ,HardwareID VARCHAR DEFAULT (null) ,First__connection__location VARCHAR DEFAULT (null),Last__connection__location VARCHAR DEFAULT (null) ,Serial_Number VARCHAR DEFAULT (null) ,Service VARCHAR DEFAULT (null),Checksum VARCHAR DEFAULT(null) )";
         private readonly string newTable = "(ID INTEGER PRIMARY KEY AUTOINCREMENT ,Added__to__list VARCHAR DEFAULT (null) ,First__connection VARCHAR DEFAULT (null) ,Name VARCHAR DEFAULT(null),DeviceType VARCHAR DEFAULT(null),USB_Class VARCHAR DEFAULT (null) ,USB_SubClass VARCHAR DEFAULT (null) ,USB_Protocol VARCHAR DEFAULT (null) ,VendorID VARCHAR DEFAULT (null) ,Vendor_Name VARCHAR DEFAULT (null) ,ProductID VARCHAR DEFAULT (null) ,ProductName VARCHAR DEFAULT (null) ,DeviceID VARCHAR DEFAULT (null) ,ClassGUID VARCHAR DEFAULT (null) ,HardwareID VARCHAR DEFAULT (null) ,First__connection__location VARCHAR DEFAULT (null),Last__connection__location VARCHAR DEFAULT (null) ,Serial_Number VARCHAR DEFAULT (null) ,Service VARCHAR DEFAULT (null),Checksum VARCHAR DEFAULT(null) )";
 
-        //Die unterschiedlichen verwendeten Datenbanken
+        //The different databases used
         private readonly List<string> _dbTables = new List<string>
         {
             "WhiteListDB",
@@ -131,7 +131,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Name der SQlite-Datenbank zurückliefern
+        /// Return the name of the SQlite-Database
         /// </summary>
         /// <param name="">Param Description</param>
         public string DatabaseName
@@ -141,7 +141,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Alle Datenbanken erstellen
+        /// Create all databases
         /// </summary>
         /// <param name="">Param Description</param>
         public void CreateDatabase()
@@ -166,7 +166,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Retourt die gerade aktivierte Datenbank
+        /// Returns the currently activated database
         /// </summary>
         /// <param name="">Param Description</param>
         public string ActiveTable
@@ -193,7 +193,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Führt die in cmdQuerry angegebene SQL-Anweisung aus
+        /// Executes the SQL statement specified in cmdQuerry
         /// </summary>
         /// <param name="">Param Description</param>
         private void ExecuteQuerry(string cmdQuerry)
@@ -217,14 +217,12 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message);
                 Console.WriteLine(ex.Message); // change to log file
             }
         }
 
         /// <summary>
-        /// Führt die durch cmdQuerry angegebene SQL-Anweisung für alle in sqlParameters 
-        /// enthaltenen Werte aus.
+        /// Executes the SQL statement specified by cmdQuerry for all in sqlParameters values.
         /// </summary>
         /// <param name="">Param Description</param>
         private bool ExecuteQuerry(string cmdQuerry, List<SQLiteParameter> sqlParameters)
@@ -251,7 +249,6 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message);
                 Console.WriteLine(ex.Message); // change to log file
                 return result;
             }
@@ -264,7 +261,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Füllt ein Datenbankfenster mit der in cmdQuerry angegebenen Liste
+        /// Fill a database window with the list specified in cmdQuerry
         /// </summary>
         /// <param name="">Param Description</param>
         private void LoadData(string cmdQuerry)
@@ -285,8 +282,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Öffnet die durch srcTable definierte Datenbank und setzt die
-        /// zugehörigen Schalter entsprechend der Liste.
+        /// Opens the database defined by srcTable and sets the
+        /// corresponding switches according to the list.
         /// </summary>
         /// <param name="">Param Description</param>
         public void fill_Grid(string srcTable)
@@ -342,8 +339,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Retourniert zu dem Gerät, welches der gegebenen Prüfsumme entspricht,
-        /// das in der Datenbank hinterlegte Datum der Hinzufügung zur Datenbank.
+        /// Returns to the device corresponding to the given checksum,
+        /// the date of the addition to the database stored in the database.
         /// </summary>
         /// <param name="">Param Description</param>
         public string get_DateAdded(string checksum, string srcTable)
@@ -360,7 +357,7 @@ namespace BadUSB_Firewall
                         {
                             while (dataReader.Read())
                             {
-                                //Übereinstimmung gefunden
+                                // Match found
                                 if (dataReader["Checksum"].ToString() == checksum)
                                 {
                                     result = dataReader["Added__to__list"].ToString();
@@ -377,8 +374,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüft ob ein Gerät mit der gegebenen Prüfsumme in der
-        /// Whitelist enthalten ist. 
+        /// Checks whether a device with the given checksum in the Whitelist is included.
         /// </summary>
         /// <param name="">Param Description</param>
         public static bool findIn_WhiteList(string checksum)
@@ -398,8 +394,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüft ob ein Gerät mit der gegebenen Prüfsumme in der
-        /// Initialisierungsliste enthalten ist. 
+        /// Checks whether a device with the given checksum in the Initiallist is included.
         /// </summary>
         /// <param name="">Param Description</param>
         public static bool findIn_InitialList(string checksum)
@@ -419,8 +414,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüft ob ein Gerät mit der gegebenen Prüfsumme in der
-        /// Blacklist enthalten ist. 
+        /// Checks whether a device with the given checksum in the Blacklist is included. 
         /// </summary>
         /// <param name="">Param Description</param>
         public static bool findIn_BlackList(string checksum)
@@ -438,8 +432,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Überprüft ob ein Gerät mit der gegebenen Prüfsumme in der
-        /// Temporären Liste enthalten ist. 
+        /// Checks whether a device with the given checksum in the Temporary list is included.
         /// </summary>
         /// <param name="">Param Description</param>
         public static bool findIn_TemporaryDeviceList(string checksum)
@@ -458,7 +451,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Temporäres Gerät hinzufügen
+        /// Add temporary device
         /// </summary>
         /// <param name="">Param Description</param>
         public void add_TempDevice(USBDeviceInfo device)
@@ -572,7 +565,7 @@ namespace BadUSB_Firewall
                     break;
                 }
             }
-            //bring Device with port information in front of the list
+            // bring Device with port information in front of the list
             if (position > -1 && position != 0 && devices.Count > 1)
             {
                 ChangeStateDevice tempDevice = devices[0];
@@ -583,8 +576,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Retourniert eine Liste mit den HardwareId's der Blockierten Geräte.
-        /// Wird für die detect_Blocked Funktion in MainWindow.xaml.cs benötigt.
+        /// Returns a list of the hardware id's of the Blocked Devices.
+        /// Required for the detect_Blocked function in MainWindow.xaml.cs.
         /// </summary>
         /// <param name="">Param Description</param>
         public List<string> get_BlacklistHWID()
@@ -613,7 +606,6 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 //MessageBox.Show(ex.Message);
                 return blackList;
             }
@@ -621,8 +613,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Ändert bei einem erneut angeschlossenen Gerät einige Werte anhand
-        /// der bereits in der Datenbank hinterlegten Werten.  
+        /// Changes some values for a newly connected device
+        ///  the values already stored in the database.
         /// </summary>
         /// <param name="">Param Description</param>
         public void get_TemporaryDevice(USBDeviceInfo device)
@@ -633,16 +625,16 @@ namespace BadUSB_Firewall
                 {
                     if (item.Checksum == device.Checksum)
                     {
-                        //Letzte Anschlussposition anpassen
+                        //Adjust last terminal position
                         device.LastLocationInformation = item.LastLocationInformation;
-                        //Anschlussdatum anpassen
+                        //Adjust the connection date
                         device.DateConnected = item.DateConnected;
-                        //Erste Verwendung (Yes, NO) anpassen
+                        //First use (Yes, NO)
                         device.FirstUsage = item.FirstUsage;
-                        //Hinterlegte letzte Anschlussposition in der Datenbank an aktuelle
-                        //Anschlussposition des Gerätes anpassen
+                        //The last port position in the database is displayed
+                        //Adjust the terminal position of the device
                         item.LastLocationInformation = device.FirstLocationInformation;
-                        //Gerät wurde mehr als einmal verwendet
+                        //Device has already been used
                         item.FirstUsage = "No";
 
                         break;
@@ -652,7 +644,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Findet die Anzahl der Elemente in einer Liste, welche der angegebenen Prüfsumme entsprechen.
+        /// Finds the number of items in a list that corresponds to the specified checksum.
         /// </summary>
         /// <param name="">Param Description</param>
         private bool find_DeviceMatch(string srcTable, string checksum)
@@ -677,15 +669,14 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
+                //Console.WriteLine(ex.Message);
             }
             return result;
 
         }
 
         /// <summary>
-        /// Löscht den Inhalt der Datenbank, welche durch srcTable angegeben ist.
+        /// Deletes the contents of the database specified by srcTable.
         /// </summary>
         /// <param name="">Param Description</param>
         public void delete_Table(string srcTable)
@@ -713,14 +704,13 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                //  MessageBox.Show(ex.Message);
+               // Console.WriteLine(ex.Message);
             }
         }
 
         /// <summary>
-        /// Zeigt die Geräteinformationen eines in der Datenbank gewählten Gerätes
-        /// in einer MessageBox. 
+        /// Displays the device information of a device selected in the database
+        /// in a MessageBox.
         /// </summary>
         /// <param name="">Param Description</param>
         private void showDevice_Click(object sender, RoutedEventArgs e)
@@ -758,8 +748,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Liefert die erste und letzte Anschlussposition, welche in der Datenbank 
-        /// hinterlegt ist, zu einem angeschlossenen Gerät zurück.
+        /// Returns the first and last port position, which is in the database
+        ///is returned to a connected device.
         /// </summary>
         /// <param name="">Param Description</param>
         /// //true = firstPort, false = lastPort
@@ -797,8 +787,7 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
+               // Console.WriteLine(ex.Message);
                 return ports;
             }
 
@@ -806,8 +795,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Aktualisiert die letzte Anschlusspoition eines Datenbank-Gerätes anhand der 
-        /// ersten Anschlusspoition des gerade angeschlossenen Gerätes an.
+        /// Updates the last connection point of a database device using the 
+        /// first connection of the connected device.
         /// </summary>
         /// <param name="">Param Description</param>
         public void UpdatePort(USBDeviceInfo device, string devTable)
@@ -862,13 +851,12 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
+               // Console.WriteLine(ex.Message);
             }
         }
 
         /// <summary>
-        /// Löscht ein ausgewähltes Gerät aus der Datenbank, wenn der "delete-Button" gedrückt wird.
+        /// Deletes a selected device from the database when the "delete" button is pressed.
         /// </summary>
         /// <param name="">Param Description</param>
         private void deleteButton_Click(object sender, RoutedEventArgs e)
@@ -1055,14 +1043,13 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message);
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
             }
 
         }
 
         /// <summary>
-        /// Fügt ein Gerät der Whitelist hinzu. 
+        /// Adds a device to Whitelist. 
         /// </summary>
         /// <param name="">Param Description</param>
         public void add_WhiteList(ChangeStateDevice device)
@@ -1074,7 +1061,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Fügt ein Gerät der Blacklist hinzu
+        /// Adds a device to Blacklist.
         /// </summary>
         /// <param name="">Param Description</param>
         public void add_BlackList(ChangeStateDevice device)
@@ -1086,8 +1073,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Der Schalter "Add to Whitelist" wurde gedrückt.
-        /// Fügt ein Gerät aus der Blacklist/DifferenceList zur Whitelist hinzu.
+        /// The "Add to Whitelist" button has been pressed.
+        /// Adds a device from the Blacklist / DifferenceList to the Whitelist.
         /// </summary>
         /// <param name="">Param Description</param>
         private void addWhiteButton_Click(object sender, RoutedEventArgs e)
@@ -1159,11 +1146,11 @@ namespace BadUSB_Firewall
                                             {
                                                 if ((dataReader["Added__to__list"].ToString() == dateAdded) && (dataReader["VendorID"].ToString() == vid) && (dataReader["productID"].ToString() == pid))
                                                 {
-                                                    //Entfernt Gerät aus der Blacklist
+                                                    //Removes device from the blacklist
                                                     BlackList.Remove(dataReader["Checksum"].ToString());
-                                                    //Fügt das Gerät der Whitelist hinzu
+                                                    //Adds the device to the whitelist
                                                     WhiteList.Add(dataReader["Checksum"].ToString());
-                                                    //Administrative Geräteregelverwaltung anpassen
+                                                    //Adjust the administrative device management
                                                     Black_ToWhite_RuleDevice(dataReader["Checksum"].ToString());
 
                                                     ChangeStateDevice tempDevice = new ChangeStateDevice(dataReader["Name"].ToString(), dataReader["HardwareID"].ToString(), dataReader["ClassGUID"].ToString(), data["DeviceID"].ToString(), data["DeviceType"].ToString(), data["Last__connection__location"].ToString(), data["VendorID"].ToString(), data["ProductID"].ToString(), data["Checksum"].ToString());
@@ -1179,7 +1166,7 @@ namespace BadUSB_Firewall
                                 RemoveAtPosition(dateAdded, vid, pid, "");
                             }
 
-                            //user decision what gets added to the whitelist or an item from the difference list gets added to the whitelist
+                            // user decision what gets added to the whitelist or an item from the difference list gets added to the whitelist
                             else
                             {
                                 checksum = data["Checksum"].ToString();
@@ -1204,7 +1191,7 @@ namespace BadUSB_Firewall
 
                             }
 
-                            //Liste neu aufbauen
+                            //Rebuild list
                             string sqlQuerry = createNewTable;
                             ExecuteQuerry(sqlQuerry);
                             string querry = "INSERT INTO temp SELECT " + addItemParameters + " FROM " + ActiveTable + " Order by ID";
@@ -1222,14 +1209,13 @@ namespace BadUSB_Firewall
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message);
-                Console.WriteLine(ex.Message);
+                 Console.WriteLine(ex.Message);
             }
         }
 
         /// <summary>
-        /// Der Schalter "Add to Blacklist" wurde gedrückt.
-        /// Fügt ein Gerät aus der Whitelist zur Blacklist hinzu.
+        /// The "Add to Blacklist" button has been pressed.
+        /// Adds a device from the Whitelist to the Blacklist.
         /// </summary>
         /// <param name="">Param Description</param>
         private void addBlackButton_Click(object sender, RoutedEventArgs e)
@@ -1365,7 +1351,6 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
             }
         }
 
@@ -1390,8 +1375,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erstellt die Geräteunterschiedslisten anhand der
-        /// Oldsatate und Newstate-Listen.
+        /// Creates the device difference lists using the
+        /// Oldsatate and Newstate lists.
         /// </summary>
         /// <param name="">Param Description</param>
         public int CreateDifferenceList(string oldState, string newState)
@@ -1487,7 +1472,7 @@ namespace BadUSB_Firewall
                     }
                 }
 
-                //Nur Abweichungen zwischen den beiden Listen der Differencelist hinzufügen
+                //Only add discrepancies between the two lists of the differencelist
                 var diffList = newList.Where(o => !oldList.Contains(o)).ToList();
 
                 foreach (var item in diffList)
@@ -1527,14 +1512,13 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
                 return count;
             }
             return count;
         }
 
         /// <summary>
-        /// Überprüfen ob ein per Prüfsumme gesuchtes Gerät in der Differenzenliste enthalten ist.
+        /// Check whether a device searched by checksum is included in the difference list.
         /// </summary>
         /// <param name="">Param Description</param>
         public bool Find_InDiffList(string checksum)
@@ -1544,7 +1528,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erstellung der Whiteliste
+        /// Creation of th whitelist
         /// </summary>
         /// <param name="">Param Description</param>
         private void build_WhiteList()
@@ -1570,12 +1554,11 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                // MessageBox.Show(ex.Message);
             }
         }
 
         /// <summary>
-        /// Erstellung der Blackliste
+        /// Creation of the blacklist
         /// </summary>
         /// <param name="">Param Description</param>
         private void build_BlackList()
@@ -1601,12 +1584,11 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
             }
         }
 
         /// <summary>
-        /// Erstellung der Initialliste
+        /// Creation of the initiallist
         /// </summary>
         /// <param name="">Param Description</param>
         private void build_InitialList()
@@ -1632,13 +1614,12 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
             }
         }
 
 
         /// <summary>
-        /// Füge erkannte abweichende Geräte aus der Differenzenliste der Temporärenliste hinzu.
+        /// Add detected deviating devices from the difference list of the temporary list.
         /// </summary>
         /// <param name="">Param Description</param>
         public void add_DiffToTemp()
@@ -1653,12 +1634,11 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
             }
         }
 
         /// <summary>
-        /// Erzeugung der Temporären-Liste
+        /// Creation of the temporarylist
         /// </summary>
         /// <param name="">Param Description</param>
         public void build_TemporaryDevicesList()
@@ -1713,12 +1693,11 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
             }
         }
 
         /// <summary>
-        /// Fügt Geräte aus der Differenzenliste zu der Temporären Liste
+        /// Adds devices from the difference list to the temporary list
         /// </summary>
         /// <param name="">Param Description</param>
         public void add_Differences(List<USBDeviceInfo> tempDevices)
@@ -1777,12 +1756,11 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
             }
         }
 
         /// <summary>
-        /// Retourniert die Anzahl der in der Blacklist hinterlegten Geräte
+        /// Returns the number of devices stored in the Blacklist
         /// </summary>
         /// <param name="">Param Description</param>
         public int get_BlacklistCount()
@@ -1791,7 +1769,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Kopiert die hinterlegten SQLite-Datenbanken in die temporären Listen bei Programmstart.
+        /// Copies the stored SQLite databases to the temporary lists at program startup.
         /// </summary>
         /// <param name="">Param Description</param>
         public void build_Lists()
@@ -1867,8 +1845,8 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Fügt ein durch den Benutzer behandeltes USB-Geräteobjekt in eine durch destinationTable angegebene
-        /// Datenbank hinzu.
+        /// Adds a USB device object handled by the user to a destination device specified
+        /// by destinationTable database.
         /// </summary>
         /// <param name="">Param Description</param>
         public bool add_DataItem(string destinationTable, USBDeviceInfo item)
@@ -1931,8 +1909,8 @@ namespace BadUSB_Firewall
 
 
         /// <summary>
-        /// Liefert die Anzahl der Schnittstellen eines Gerätes anhand der 
-        /// übergebenen HardwareID zurück.
+        /// Returns the number of interfaces of a device using the
+        /// transferred HardwareID.
         /// </summary>
         /// <param name="">Param Description</param>
         public uint get_Interfaces(string HardwareID, string dbList)
@@ -1975,7 +1953,7 @@ namespace BadUSB_Firewall
 
         #region FirewallRules
         /// <summary>
-        /// "Apply_changes"-Schalter in der Administrativen Geräteregel-Verwaltung wurde gedrückt.
+        /// "Apply_changes" button in Administrative Manager Management has been pressed.
         /// </summary>
         /// <param name="">Param Description</param>
         private void apply_ChangePressed(object sender, ApplyChangesPressedArgs e)
@@ -1985,14 +1963,14 @@ namespace BadUSB_Firewall
                 List<RemoveRuleDevice> listDeviceRemove = new List<RemoveRuleDevice>();
                 var listRemoveposition = new List<KeyValuePair<string, int>>();
 
-                //Alle Geräte der Administrativen Geräteregel-Verwaltung durchlaufen und überprüfen ob bei diesem Eintrag eine Änderung 
-                //durchgeführt wurde.
+                //Go through all devices of the administrative device management and check if there
+                //is a change in this entry was carried out.
                 for (int i = DeviceRuleList.Count - 1; i > -1; i--)
                 {
-                    //Gerät wurde blockiert(zur Blacklist hinzugefügt) und ist aktuell noch zugelassen(in der Whitelist)
+                    //Device has been blocked (added to Blacklist) and is currently still authorized (in the Whitelist)
                     if (DeviceRuleList[i].Added_BlackList && DeviceRuleList[i].In_WhiteList)
                     {
-                        //Entferne Gerät aus der Blacklist und füge es der Whitelist hinzu
+                        //emove the device from the Blacklist and add it to the Whitelist
                         using (SQLiteConnection c = new SQLiteConnection(_connectionString))
                         {
                             c.Open();
@@ -2018,13 +1996,13 @@ namespace BadUSB_Firewall
                         }
                         listRemoveposition.Add(new KeyValuePair<string, int>("BlackListDB", i));
                     }
-                    //Gerät wurde entfernt und ist aktuell noch in der Blacklist
+                    //Device has been removed and is currently still in the Blacklist
                     else if (DeviceRuleList[i].Added_BlackList && DeviceRuleList[i].Remove_Device)
                     {
-                        //Entferne Gerät aus der Blacklist
+                        //Remove device from the blacklist
                         listDeviceRemove.Add(new RemoveRuleDevice(DeviceRuleList[i].mChecksum, DeviceRuleList[i].mDateAdded, DeviceRuleList[i].mVendorID, DeviceRuleList[i].mProductID, DeviceRuleList[i].mHardwareID, "BlackListDB"));
                     }
-                    //Entferne Gerät aus der Whitelist und füge es der Blacklist hinzu
+                    //Remove device from the blacklist and add it into the whitelist
                     else if (DeviceRuleList[i].Added_WhiteList && DeviceRuleList[i].In_BlackList)
                     {
                         using (SQLiteConnection c = new SQLiteConnection(_connectionString))
@@ -2052,7 +2030,7 @@ namespace BadUSB_Firewall
                         }
                         listRemoveposition.Add(new KeyValuePair<string, int>("WhiteListDB", i));
                     }
-                    //Gerät aus der Whitelist wurde entfernt
+                    //Device from the whitelist was removed
                     else if (DeviceRuleList[i].Added_WhiteList && DeviceRuleList[i].Remove_Device)
                     {
                         //remove device from the whitelist (delete button click)
@@ -2116,7 +2094,7 @@ namespace BadUSB_Firewall
             }
         }
         /// <summary>
-        /// Gerät aus Blacklist wurde geändert auf Gerät der Whitelist
+        /// The device from Blacklist was changed to the device of the Whitelist
         /// </summary>
         /// <param name="">Param Description</param>
         private void Black_ToWhite_RuleDevice(string checksum)
@@ -2134,7 +2112,7 @@ namespace BadUSB_Firewall
             }
         }
         /// <summary>
-        /// Gerät aus Whitelist wurde geändert auf Gerät der Blacklist
+        /// The device from Whitelist has been changed to Blacklist
         /// </summary>
         /// <param name="">Param Description</param>
         private void White_ToBlack_RuleDevice(string checksum)
@@ -2153,7 +2131,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Entferne ein Gerät aus der Verwaltung
+        /// Remove a device from the administration
         /// </summary>
         /// <param name="">Param Description</param>
         private void Delete_RuleDevice(string srcTable, string vID, string pID, string dateAdded)
@@ -2199,7 +2177,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Lösche die Administrativen Geräteregel-Listen
+        /// Delete the administrative device list
         /// </summary>
         /// <param name="">Param Description</param>
         private void Remove_RuleDevices(string srcTable)
@@ -2228,7 +2206,7 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Öffne das Fenster der Geräteregel-Verwaltung
+        /// Open the Device Management window
         /// </summary>
         /// <param name="">Param Description</param>
         public void show_FirewallRules()
@@ -2241,8 +2219,8 @@ namespace BadUSB_Firewall
         }
 
         /// <summary>
-        /// Erzeugt die Administrative Geräteregel-Verwaltungsliste anhand
-        /// der Blacklist und Whitelist
+        /// Generate the administrative device list
+        /// the Blacklist and Whitelist
         /// </summary>
         /// <param name="">Param Description</param>
         public void create_DeviceRuleList()
@@ -2327,7 +2305,6 @@ namespace BadUSB_Firewall
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //MessageBox.Show(ex.Message);
             }
         }
         #endregion
